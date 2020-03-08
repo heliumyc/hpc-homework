@@ -78,6 +78,7 @@ void junk_data ( )
 //
 //  X = { 0, 1, 2, 3, 4, ?a, ?b, ?c, ?d, ?e }.
 //
+//  initialize all data in array x
 //  for ( i = 0; i < 5; i++ )
   for ( i = 0; i < 10; i++ )
   {
