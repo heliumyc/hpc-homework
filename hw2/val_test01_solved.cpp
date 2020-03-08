@@ -69,7 +69,10 @@ void f ( int n )
   int i;
   int *x;
 
+  // in for loop x[n] is reached and previous program only allocated n int for x
+  // so out of boundary error occurs
   x = (int*) malloc ( (n+1) * sizeof ( int ) );
+//    x = (int*) malloc ( n * sizeof ( int ) );
 
   x[0] = 1;
   cout << "  " << 0 << "  " << x[0] << "\n";
