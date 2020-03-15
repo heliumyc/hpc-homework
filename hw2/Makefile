@@ -2,6 +2,10 @@ CFLAGS:=-O3 # -g = debug, -O2 for optimized code CPPFLAGS for g++
 CC:=g++
 OMP:=-fopenmp
 
+.PHONY: all
+
+all: val01 val02 mmult ompbugs jacobi gs;
+
 val01:
 	$(CC) $(CFLAGS)  -o val_test01_solved val_test01_solved.cpp
 
