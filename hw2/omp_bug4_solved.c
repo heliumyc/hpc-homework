@@ -30,6 +30,8 @@ double a[N][N];
     nthreads = omp_get_num_threads();
     printf("Number of threads = %d\n", nthreads);
     }
+
+#pragma omp barrier
   printf("Thread %d starting...\n", tid);
 
   /* Each thread works on its own private copy of the array */
