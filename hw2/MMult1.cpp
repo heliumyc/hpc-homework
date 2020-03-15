@@ -5,7 +5,7 @@
 #include <omp.h>
 #include "utils.h"
 
-#define BLOCK_SIZE 16
+#define BLOCK_SIZE 64
 
 // Note: matrices are stored in column major order; i.e. the array elements in
 // the (m x n) matrix C are stored in the sequence: {C_00, C_10, ..., C_m0,
@@ -25,7 +25,40 @@ void MMult0(long m, long n, long k, double *a, double *b, double *c) {
 }
 
 void MMult1(long m, long n, long k, double *a, double *b, double *c) {
-  // TODO: See instructions below
+    // In MMult1, the best order is supposed to be j-p-i. Because
+    //the CPU fetches data via cache line, the memory access time is reduced
+    //if we read array data sequentially.
+
+    // jpi, jip, ipj, ijp, pij, pji
+//    for (long p = 0; p < k; p++) {
+//        for (long j = 0; j < n; j++) {
+//            for (long i = 0; i < m; i++) {
+//                double A_ip = a[i+p*m];
+//                double B_pj = b[p+j*k];
+//                double C_ij = c[i+j*m];
+//                C_ij = C_ij + A_ip * B_pj;
+//                c[i+j*m] = C_ij;
+//            }
+//        }
+//    }
+
+    // blocking
+//    #pragma omp parallel for num_threads(8) schedule(static)
+    for (long ii = 0; ii < m; ii += BLOCK_SIZE) {
+        for (long jj = 0; jj < n; jj += BLOCK_SIZE) {
+            for (long pp = 0; pp < k; pp += BLOCK_SIZE) {
+                for (long j = 0; j < BLOCK_SIZE; j++) {
+                    for (long p = 0; p < BLOCK_SIZE; p++) {
+                        double B_pj = b[(p + pp) + (j + jj) * k];
+                        for (long i = 0; i < BLOCK_SIZE; i++) {
+                            double A_ip = a[(i + ii) + (p + pp) * m];
+                            c[(i + ii) + (j + jj) * m] += A_ip * B_pj;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 int main(int argc, char** argv) {
@@ -37,6 +70,7 @@ int main(int argc, char** argv) {
   for (long p = PFIRST; p < PLAST; p += PINC) {
     long m = p, n = p, k = p;
     long NREPEATS = 1e9/(m*n*k)+1;
+//    long NREPEATS = 1;
     double* a = (double*) aligned_malloc(m * k * sizeof(double)); // m x k
     double* b = (double*) aligned_malloc(k * n * sizeof(double)); // k x n
     double* c = (double*) aligned_malloc(m * n * sizeof(double)); // m x n
@@ -58,9 +92,9 @@ int main(int argc, char** argv) {
       MMult1(m, n, k, a, b, c);
     }
     double time = t.toc();
-    double flops = 0; // TODO: calculate from m, n, k, NREPEATS, time
-    double bandwidth = 0; // TODO: calculate from m, n, k, NREPEATS, time
-    printf("%10d %10f %10f %10f", p, time, flops, bandwidth);
+    double flops = 2*m*n*k*NREPEATS/time/1e9; // : calculate from m, n, k, NREPEATS, time
+    double bandwidth = 4*m*n*k*NREPEATS* sizeof(double)/time/1e9; // : calculate from m, n, k, NREPEATS, time
+    printf("%10ld %10f %10f %10f", p, time, flops, bandwidth);
 
     double max_err = 0;
     for (long i = 0; i < m*n; i++) max_err = std::max(max_err, fabs(c[i] - c_ref[i]));
