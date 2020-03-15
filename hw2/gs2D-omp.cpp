@@ -66,12 +66,18 @@ int main(int argc, char** argv) {
     int k;
     for (k = 1; k <= maxIter; ++k) {
         // red
+# ifdef _OPENMP
+#   pragma omp parallel for num_threads(threadNum)
+# endif
         for (int i = 1; i <= N; ++i) {
             for (int j = 1+(i-1)%2; j <= N; j += 2) {
                 v[i*SIZE+j] = (hSqr+u[(i-1)*SIZE+j]+u[i*SIZE+j-1]+u[(i+1)*SIZE+j]+u[i*SIZE+j+1])/4;
             }
         }
 
+# ifdef _OPENMP
+#   pragma omp parallel for num_threads(threadNum)
+# endif
         // black
         for (int i = 1; i <= N; ++i) {
             for (int j = 1+i%2; j <= N; j += 2) {
