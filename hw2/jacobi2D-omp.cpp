@@ -1,7 +1,7 @@
 //
 // Created by CONG YU on 2020/3/14.
 //
-//#define DEBUG
+//#define debug
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -65,6 +65,10 @@ int main(int argc, char** argv) {
     // jacobi start
     int k;
     for (k = 1; k <= maxIter; ++k) {
+
+# ifdef _OPENMP
+#   pragma omp parallel for num_threads(threadNum)
+# endif
         for (int i = 1; i <= N; ++i) {
             for (int j = 1; j <= N; ++j) {
                 // update u
