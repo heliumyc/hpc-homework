@@ -17,11 +17,11 @@ mmult:
 	$(CC) $(CFLAGS) $(STD) $(OMP) -o MMult1 MMult1.cpp
 
 ompbugs:
-	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved2 omp_bug2_solved.cpp;
-	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved3 omp_bug3_solved.cpp;
-	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved4 omp_bug4_solved.cpp;
-	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved5 omp_bug5_solved.cpp;
-	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved6 omp_bug6_solved.cpp;
+	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved2 omp_bug2_solved.c;
+	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved3 omp_bug3_solved.c;
+	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved4 omp_bug4_solved.c;
+	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved5 omp_bug5_solved.c;
+	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved6 omp_bug6_solved.c;
 
 jacobi:
 	$(CC) $(CFLAGS) $(STD) $(OMP)  -o jacobi2D-omp jacobi2D-omp.cpp;
