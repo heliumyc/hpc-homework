@@ -43,7 +43,7 @@ void MMult1(long m, long n, long k, double *a, double *b, double *c) {
 //    }
 
     // blocking
-//    #pragma omp parallel for num_threads(8) schedule(static)
+    #pragma omp parallel for num_threads(6) schedule(static)
     for (long ii = 0; ii < m; ii += BLOCK_SIZE) {
         for (long jj = 0; jj < n; jj += BLOCK_SIZE) {
             for (long pp = 0; pp < k; pp += BLOCK_SIZE) {
