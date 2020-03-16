@@ -13,6 +13,11 @@ make clean
 
 ## Usage
 
+For omp bug 4, must run
+```
+ulimit -s unlimited
+```
+
 For Jacobi and Gauss
 
 ```
