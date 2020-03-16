@@ -37,10 +37,10 @@ clean:
 test:
 	./val_test01_solved;
 	./val_test02_solved;
-	./omp_bug2_solved;
-	./omp_bug3_solved;
-	./omp_bug4_solved;
-	./omp_bug5_solved;
-	./omp_bug6_solved;
+	./omp_solved2;
+	./omp_solved3;
+	./omp_solved4;
+	./omp_solved5;
+	./omp_solved6;
 	./jacobi2D-omp 100 -1 6;
 	./gs2D-omp 100 -1 6;
