@@ -35,6 +35,7 @@ clean:
 	rm -f jacobi2D-omp gs2D-omp;
 
 test:
+	ulimit -s unlimited;
 	./val_test01_solved;
 	./val_test02_solved;
 	./omp_solved2;
