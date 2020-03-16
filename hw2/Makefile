@@ -14,7 +14,7 @@ val02:
 	$(CC) $(CFLAGS) $(STD)  -o val_test02_solved val_test02_solved.cpp
 
 mmult:
-	$(CC) $(CFLAGS) $(STD) $(OMP) -o MMult1 MMult1.cpp
+	$(CC) $(CFLAGS) $(STD) $(OMP) -march=native -o MMult1 MMult1.cpp
 
 ompbugs:
 	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved2 omp_bug2_solved.c;
