@@ -11,7 +11,7 @@
 #define N 1048
 
 /*
- * // use 'ulimit -s unlimited' before run, or else memory overflow
+ * // use 'ulimit -s unlimited' before run, or else segment fault (memory overflow)
  */
 
 int main (int argc, char *argv[]) 
