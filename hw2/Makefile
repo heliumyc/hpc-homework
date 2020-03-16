@@ -24,10 +24,10 @@ ompbugs:
 	$(CC) $(CFLAGS) $(STD) $(OMP) -o omp_solved6 omp_bug6_solved.c;
 
 jacobi:
-	$(CC) $(CFLAGS) $(STD) $(OMP)  -o jacobi2D-omp jacobi2D-omp.cpp;
+	$(CC) $(CFLAGS) $(STD) $(OMP) -march=native -o jacobi2D-omp jacobi2D-omp.cpp;
 
 gs:
-	$(CC) $(CFLAGS) $(STD) $(OMP)  -o gs2D-omp gs2D-omp.cpp;
+	$(CC) $(CFLAGS) $(STD) $(OMP) -march=native -o gs2D-omp gs2D-omp.cpp;
 
 clean:
 	rm -f val_test01_solved val_test02_solved *.o;
