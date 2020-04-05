@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/yucong/Study/hpc/hw1/laplace/main.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+time.h
+-
+math.h
+-
+

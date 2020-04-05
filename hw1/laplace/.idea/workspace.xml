@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="laplace" targetName="laplace" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="32ed7871-8e24-4210-b38b-8af55b3545fd" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FavoritesManager">
+    <favorites_list name="laplace" />
+  </component>
+  <component name="ProjectId" id="1Y8H1sDcqKsfIJViVmUxXD9IyaB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="settings.editor.selected.configurable" value="CPPToolchains" />
+  </component>
+  <component name="RunManager">
+    <configuration name="laplace" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="10000 100 2 1" PASS_PARENT_ENVS_2="true" PROJECT_NAME="laplace" TARGET_NAME="laplace" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="laplace" RUN_TARGET_NAME="laplace">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="32ed7871-8e24-4210-b38b-8af55b3545fd" name="Default Changelist" comment="" />
+      <created>1582317088884</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1582317088884</updated>
+      <workItem from="1582317090713" duration="11585000" />
+      <workItem from="1582524849369" duration="14245000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="304" y="160" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1582534896571">
+      <screen x="0" y="23" width="1680" height="951" />
+    </state>
+    <state x="304" y="160" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1680.951@0.23.1680.951" timestamp="1582534896571" />
+    <state width="1636" height="204" key="GridCell.Tab.0.bottom" timestamp="1582565940823">
+      <screen x="0" y="23" width="1680" height="948" />
+    </state>
+    <state width="1636" height="204" key="GridCell.Tab.0.bottom/0.23.1680.948@0.23.1680.948" timestamp="1582565940823" />
+    <state width="1636" height="204" key="GridCell.Tab.0.bottom/0.23.1680.951@0.23.1680.951" timestamp="1582534897626" />
+    <state width="1636" height="204" key="GridCell.Tab.0.center" timestamp="1582565940822">
+      <screen x="0" y="23" width="1680" height="948" />
+    </state>
+    <state width="1636" height="204" key="GridCell.Tab.0.center/0.23.1680.948@0.23.1680.948" timestamp="1582565940822" />
+    <state width="1636" height="204" key="GridCell.Tab.0.center/0.23.1680.951@0.23.1680.951" timestamp="1582534897625" />
+    <state width="1636" height="204" key="GridCell.Tab.0.left" timestamp="1582565940821">
+      <screen x="0" y="23" width="1680" height="948" />
+    </state>
+    <state width="1636" height="204" key="GridCell.Tab.0.left/0.23.1680.948@0.23.1680.948" timestamp="1582565940821" />
+    <state width="1636" height="204" key="GridCell.Tab.0.left/0.23.1680.951@0.23.1680.951" timestamp="1582534897625" />
+    <state width="1636" height="204" key="GridCell.Tab.0.right" timestamp="1582565940823">
+      <screen x="0" y="23" width="1680" height="948" />
+    </state>
+    <state width="1636" height="204" key="GridCell.Tab.0.right/0.23.1680.948@0.23.1680.948" timestamp="1582565940823" />
+    <state width="1636" height="204" key="GridCell.Tab.0.right/0.23.1680.951@0.23.1680.951" timestamp="1582534897626" />
+    <state x="341" y="136" key="SettingsEditor" timestamp="1582525273808">
+      <screen x="0" y="23" width="1680" height="951" />
+    </state>
+    <state x="341" y="136" key="SettingsEditor/0.23.1680.951@0.23.1680.951" timestamp="1582525273808" />
+    <state x="517" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1582524854463">
+      <screen x="0" y="23" width="1680" height="951" />
+    </state>
+    <state x="517" y="331" key="com.intellij.ide.util.TipDialog/0.23.1680.951@0.23.1680.951" timestamp="1582524854463" />
+  </component>
+</project>

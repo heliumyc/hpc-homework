@@ -1,0 +1,121 @@
+% !TEX TS-program = xelatex
+\documentclass[titlepage]{article}
+\usepackage{seqsplit}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{pdflscape}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage[legalpaper, margin=1.5in]{geometry}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[backend=biber]{biblatex}
+
+\addbibresource{ref.bib}
+
+
+\lineskip=6pt
+\lineskiplimit=18pt
+\renewcommand \thesubsection{(\alph{subsection})}
+
+\title{
+    Application of HPC in graphs community detection
+}
+\author{\itshape Cong Yu}
+\date{\today}
+\begin{document}
+
+\maketitle
+
+% begin of plain text
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.5em}
+
+\section{Problem Introduction}
+In graph theory, community detection, also known as graph clustering is to partition nodes of the graph into small
+subsets (or communities) based on certain criteria. 
+One intuition behind this method is
+that nodes in the same cluster or module may share similar properties
+or patterns so we can better study the complex network.
+
+Therefore, this method can be applied in many disciplines whose problems can
+be modeled as networks. Such as in society, people natrurally form different groups like families, organizations, and countries. Also, 
+web resources in the same cluster may contain related or even the same topics. 
+Another example from biology is that in protein-protein interaction,
+one protein is prone to behave in cells similarly.
+\cite{1}
+
+\section{Needs for HPC}
+In recent years, this method has been applied in increasingly complex 
+networks such as social networks. Despite polynomial time complexity
+of mainstream algorithms, the computation time of most algorithms is up 
+to about 10 seconds when the numbers of nodes in the graph reach 20000.
+
+However, a large graph like the followed-by network in Facebook is about
+200 million in the US alone. \cite{2}
+Thus, the cost for a large graph like that would be intolerable in
+most cases. Even worse, such a large network is almost impossible to store on a single machine.
+
+Hence, the community-detection problem must be solved by parallel,
+reliable and scalable algorithms where the high-performance computing
+comes to play.
+
+\section{Algorithms}
+There are many algorithms to do this job. Among all the algorithms,
+Label Propagation (LP) algorithm \cite{3} is the fasted, most widely
+used in real practice and also suited to be parallelized.
+
+The basic process of this algorithm goes as follow:
+
+1. Every node in the graph has a unique label. 
+
+2. For each iteration, the label is updated by the majority of the
+neighbors. 
+
+2.1 If there is a tie among the choices, a winner is chosen randomly.
+
+3. The algorithm converges when every node has a label that at least
+half of its neighbors hold. 
+
+\section{Performance and Scalability}
+
+The time complexity of the label propagation algorithm is near-linear \cite{3},
+and the actual computation takes less than 0.1s for 20000 nodes on a single machine \cite{2}. 
+
+Furthermore, this method can be easily parallelized since 
+each update for nodes would only require data from their neighbors
+and could be calculated separately.
+
+The map-reduce version of this algorithm from the paper
+\cite{4} goes as follow:
+
+\begin{lstlisting}
+
+Input: 
+    input graph G_in (edge based)
+    number of propagation steps p
+    number of label instance k
+
+Output:
+    vertex-core group mapping M 
+    output graph G_out
+
+Procedure:
+passed_labels = ReadMap (G, k)
+for i = 1 to p − 1
+    new_labels = PropagateReduce(passed_labels)
+    passed_labels = PropagateMap(new_labels)
+final_labels = CoreGroupsExportReduce(newlabels, M)
+final_labels = EdgeListPreparationMap(final_labels)
+core_group_links = EdgeListPreparationReduce(final_labels)
+core_group_links = EdgeListExportMap(coregrouplinks)
+EdgeListExportReduce(M, G_out)
+
+\end{lstlisting}
+
+\printbibliography
+
+
+\end{document}
