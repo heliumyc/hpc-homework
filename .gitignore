@@ -1,5 +1,7 @@
 # Prerequisites
 .DS_Store
+/*/cmake-*
+/*/.idea
 *.d
 
 # Compiled Object files
