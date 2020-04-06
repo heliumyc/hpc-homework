@@ -134,8 +134,8 @@ int main() {
     double *sinx_intrin = (double *) aligned_malloc(N * sizeof(double));
     double *sinx_vector = (double *) aligned_malloc(N * sizeof(double));
     for (long i = 0; i < N; i++) {
-//        x[i] = (drand48() - 0.5) * M_PI / 2; // [-pi/4,pi/4]
-        x[i] = drand48() * M_PI / 2; // [0,pi/2]
+        x[i] = (drand48() - 0.5) * M_PI / 2; // [-pi/4,pi/4]
+//        x[i] = drand48() * M_PI / 2; // [0,pi/2]
         sinx_ref[i] = 0;
         sinx_taylor[i] = 0;
         sinx_intrin[i] = 0;
