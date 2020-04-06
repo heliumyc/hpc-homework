@@ -38,14 +38,15 @@ void scan_omp(long* prefix_sum, const long* A, long n) {
         for (int k = 1; k < p; k++) {
             partial_sum[k] += partial_sum[k - 1];
         }
-
-#pragma omp for
-            for (int k = 1; k < p; k++) {
-                for (long i = len * k + 1; i < n && i <= len * (k + 1); i++) {
-                    prefix_sum[i] += partial_sum[k - 1];
-                }
-            }
     };
+
+#pragma omp parallel
+#pragma omp for
+    for (int k = 1; k < p; k++) {
+        for (long i = len * k + 1; i < n && i <= len * (k + 1); i++) {
+            prefix_sum[i] += partial_sum[k - 1];
+        }
+    }
 
     free(partial_sum);
 
