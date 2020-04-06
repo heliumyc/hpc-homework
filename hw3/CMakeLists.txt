@@ -11,4 +11,5 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 include_directories("/usr/local/include" "/usr/local/opt/llvm/include")
 link_directories("/usr/local/lib" "/usr/local/opt/llvm/lib")
 
-add_executable(${EXE_NAME} ${SOURCE_FILE})
+#add_executable(${EXE_NAME} ${SOURCE_FILE})
+add_executable(scan omp-scan.cpp)
