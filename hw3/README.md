@@ -16,7 +16,7 @@ benchmark with different threads
 | 7   | 0.393331s        |  0.239960s |
 | 8   | 0.392442s        | 0.252725s  |
 
-We can see that parallel code works best with 8 threads
+We can see that parallel code works best with 6 threads
 
 Architecture
 ```text
