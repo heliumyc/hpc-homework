@@ -22,31 +22,34 @@ void scan_omp(long* prefix_sum, const long* A, long n) {
   prefix_sum[0] = 0;
   omp_set_num_threads(p);
 
-#pragma omp parallel for default(shared)
+#pragma omp parallel
     {
-        for (int k = 0; k < p; k++) {
-            prefix_sum[len * k + 1] = A[len * k];
-            int i = len * k + 2;
-            for (; i < n && i <= len * (k + 1); i++) {
-                prefix_sum[i] = prefix_sum[i - 1] + A[i - 1];
+#pragma omp for
+        {
+            for (int k = 0; k < p; k++) {
+                prefix_sum[len * k + 1] = A[len * k];
+                int i = len * k + 2;
+                for (; i < n && i <= len * (k + 1); i++) {
+                    prefix_sum[i] = prefix_sum[i - 1] + A[i - 1];
+                }
+                partial_sum[k] = prefix_sum[i - 1];
             }
-            partial_sum[k] = prefix_sum[i - 1];
         }
-    }
-
+//#pragma omp barrier
 #pragma omp single
-            for (int k = 1; k < p; k++) {
-                partial_sum[k] += partial_sum[k - 1];
-            }
-
-#pragma omp parallel for default(shared)
-    {
         for (int k = 1; k < p; k++) {
-            for (long i = len * k + 1; i < n && i <= len * (k + 1); i++) {
-                prefix_sum[i] += partial_sum[k - 1];
+            partial_sum[k] += partial_sum[k - 1];
+        }
+
+#pragma omp for
+        {
+            for (int k = 1; k < p; k++) {
+                for (long i = len * k + 1; i < n && i <= len * (k + 1); i++) {
+                    prefix_sum[i] += partial_sum[k - 1];
+                }
             }
         }
-    }
+    };
 
     free(partial_sum);
 
