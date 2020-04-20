@@ -6,6 +6,8 @@
 #include <omp.h>
 #include <random>
 #include <string>
+#include <cuda_runtime_api.h>
+#include <cuda.h>
 
 void Check_CUDA_Error(const char *message) {
     cudaError_t error = cudaGetLastError();
