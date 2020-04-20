@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <omp.h>
 #include <string>
-#include <cuda_runtime_api.h>
-#include <cuda.h>
 
 void vec_add(double* c, const double* a, const double* b, long N){
 #pragma omp parallel for schedule(static)
