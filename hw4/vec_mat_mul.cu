@@ -39,7 +39,7 @@ void openmp_vec_mat_mul(double* res, const double* mat, const double* vec, long 
     }
 }
 
-#define BLOCK_SIZE 1024
+#define BLOCK_SIZE 64
 
 __global__
 void gpu_map_vec_mat_mul(const double* mat, const double *vec, double *temp_mat, long n) {
