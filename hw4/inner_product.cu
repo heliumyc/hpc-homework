@@ -176,8 +176,11 @@ int main() {
 
     gpu_map_vec_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, temp, n);
 
-    cudaMemcpyAsync(temp, temp_d, n*sizeof(double), cudaMemcpyDeviceToHost);
-    openmp_reduce_sum(&cuda_res, temp, n);
+    double* buf;
+    cudaMallocHost((void**)&buf, n * sizeof(double));
+    cudaMemcpyAsync(buf, temp_d, n*sizeof(double), cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
+    openmp_reduce_sum(&cuda_res, buf, n);
 
 
 //    double* sum_d = extra_d;
