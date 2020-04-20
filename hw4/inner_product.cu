@@ -161,7 +161,6 @@ int main() {
     cudaMalloc(&b_d, n*sizeof(double));
     cudaMemcpyAsync(a_d, a, n*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(b_d, b, n*sizeof(double), cudaMemcpyHostToDevice);
-    cudaDeviceSynchronize();
 
     double* temp_d;
     cudaMalloc(&temp_d, n*sizeof(double));
@@ -176,24 +175,17 @@ int main() {
 
     gpu_map_vec_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, temp_d, n);
 
-    double* buf;
-    cudaMallocHost((void**)&buf, n * sizeof(double));
-    cudaMemcpyAsync(buf, temp_d, n*sizeof(double), cudaMemcpyDeviceToHost);
+    double* sum_d = extra_d;
+    long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
+    reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d, temp_d, n);
+    while (Nb > 1) {
+        long lastN = Nb;
+        Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
+        reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d + lastN, sum_d, lastN);
+        sum_d += lastN;
+    }
+    cudaMemcpyAsync(&cuda_res, sum_d, 1*sizeof(double), cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
-    openmp_reduce_sum(&cuda_res, buf, n);
-
-
-//    double* sum_d = extra_d;
-//    long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
-//    reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d, temp_d, n);
-//    while (Nb > 1) {
-//        long lastN = Nb;
-//        Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
-//        reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d + lastN, sum_d, lastN);
-//        sum_d += lastN;
-//    }
-//    cudaMemcpyAsync(&cuda_res, sum_d, 1*sizeof(double), cudaMemcpyDeviceToHost);
-//    cudaDeviceSynchronize();
 
     time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
