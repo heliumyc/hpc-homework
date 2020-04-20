@@ -145,17 +145,29 @@ int main() {
     cudaDeviceSynchronize();
 
     double* temp_d;
+    cudaMalloc(&temp_d, n*sizeof(double));
     double* extra_d;
     long N_work = 1;
     for (long i = (n+BLOCK_SIZE-1)/(BLOCK_SIZE); i > 1; i = (i+BLOCK_SIZE-1)/(BLOCK_SIZE)) N_work += i;
-    cudaMalloc(&temp_d, n*sizeof(double));
     cudaMalloc(&extra_d, N_work*sizeof(double)); // extra memory buffer for reduction across thread-blocks
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
-    gpu_map_vec_inner_product(a, b, temp, n);
-    gpu_reduce_inner_product(a, temp, n);
-    double cuda_res = temp[0];
+    double* sum_d = extra_d;
+
+    gpu_map_vec_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, temp, n);
+
+    long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
+    gpu_reduce_inner_product<<<Nb,BLOCK_SIZE>>>(sum_d, temp_d, n);
+    while (Nb > 1) {
+        long lastN = Nb;
+        Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
+        gpu_reduce_inner_product<<<Nb,BLOCK_SIZE>>>(sum_d + lastN, sum_d, lastN);
+        sum_d += lastN;
+    }
+    double cuda_res;
+    cudaMemcpyAsync(&cuda_res, sum_d, 1*sizeof(double), cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
     time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
     printf("Time = %f\n", time/1e9);
