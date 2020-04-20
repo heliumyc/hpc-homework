@@ -79,6 +79,25 @@ void gpu_reduce_inner_product_kernal(const double *a, double *sum, long n) {
 
 }
 
+__global__ void reduction_kernel0(double* sum, const double* a, long N){
+    __shared__ double smem[BLOCK_SIZE];
+    int idx = (blockIdx.x) * blockDim.x + threadIdx.x;
+
+    // each thread reads data from global into shared memory
+    if (idx < N) smem[threadIdx.x] = a[idx];
+    else smem[threadIdx.x] = 0;
+    __syncthreads();
+
+    for(int s = 1; s < blockDim.x; s *= 2) {
+        if(threadIdx.x % (2*s) == 0)
+            smem[threadIdx.x] += smem[threadIdx.x + s];
+        __syncthreads();
+    }
+
+    // write to global memory
+    if (threadIdx.x == 0) sum[blockIdx.x] = smem[threadIdx.x];
+}
+
 int main() {
     long n = (1UL<<25); // 2^25
 
@@ -158,11 +177,11 @@ int main() {
 
     double* sum_d = extra_d;
     long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
-    gpu_reduce_inner_product_kernal<<<Nb,BLOCK_SIZE>>>(sum_d, temp_d, n);
+    reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d, temp_d, n);
     while (Nb > 1) {
         long lastN = Nb;
         Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
-        gpu_reduce_inner_product_kernal<<<Nb,BLOCK_SIZE>>>(sum_d + lastN, sum_d, lastN);
+        reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d + lastN, sum_d, lastN);
         sum_d += lastN;
     }
     cudaMemcpyAsync(&cuda_res, sum_d, 1*sizeof(double), cudaMemcpyDeviceToHost);
