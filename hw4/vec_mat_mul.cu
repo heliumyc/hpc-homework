@@ -139,7 +139,7 @@ int main() {
     double* extra_d;
     long N_work = 1;
     for (long i = (n+BLOCK_SIZE-1)/(BLOCK_SIZE); i > 1; i = (i+BLOCK_SIZE-1)/(BLOCK_SIZE)) N_work += i;
-    cudaMalloc(&extra_d, N_work*sizeof(double)); // extra memory buffer for reduction across thread-blocks
+    cudaMalloc(&extra_d, N_work*n*sizeof(double)); // extra memory buffer for reduction across thread-blocks
     cudaDeviceSynchronize();
 
 
