@@ -61,7 +61,7 @@ void gpu_reduce_inner_product(const double *a, double *sum, long n) {
     int idx = (blockIdx.x) * blockDim.x + threadIdx.x;
 
     // each thread reads data from global into shared memory
-    if (idx < N) smem[threadIdx.x] = a[idx];
+    if (idx < n) smem[threadIdx.x] = a[idx];
     else smem[threadIdx.x] = 0;
     __syncthreads();
 
@@ -78,14 +78,6 @@ void gpu_reduce_inner_product(const double *a, double *sum, long n) {
     if (threadIdx.x == 0) sum[blockIdx.x] = smem[threadIdx.x];
 
 }
-
-
-//__global__
-//void vec_add_kernel(double *c, const double *a, const double *b, long N) {
-//    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-//    if (idx < N) c[idx] = a[idx] + b[idx];
-//}
-
 
 int main() {
     long n = (1UL<<25); // 2^25
