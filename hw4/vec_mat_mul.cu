@@ -79,6 +79,14 @@ __global__ void gpu_reduce_vec_mat_mul(double* sum, const double* mat, long n){
     }
 }
 
+void Check_CUDA_Error(const char *message){
+    cudaError_t error = cudaGetLastError();
+    if(error!=cudaSuccess) {
+        fprintf(stderr,"ERROR: %s: %s\n", message, cudaGetErrorString(error) );
+        exit(-1);
+    }
+}
+
 int main() {
 
     long n = 1<<12;
@@ -130,8 +138,11 @@ int main() {
     double* mat_d;
     double* temp_mat_d;
     cudaMalloc(&vec_d, n*sizeof(double));
+    Check_CUDA_Error("malloc vec_d failed");
     cudaMalloc(&mat_d, n*n*sizeof(double));
+    Check_CUDA_Error("malloc mat_d failed");
     cudaMalloc(&temp_mat_d, n*n*sizeof(double));
+    Check_CUDA_Error("malloc temp_mat failed");
     cudaMemcpyAsync(vec_d, vec, n*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(mat_d, mat, n*n*sizeof(double), cudaMemcpyHostToDevice);
 
