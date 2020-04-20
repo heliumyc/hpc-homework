@@ -1,77 +1,86 @@
-#include <iostream>
+//
+// Created by CONG YU on 4/20/20.
+//
+
 #include <algorithm>
 #include <stdio.h>
 #include <omp.h>
 #include <random>
 #include <string>
 
-// cpu sequential computation
-void sequential_vec_inner_product(double *res, const double *a, const double *b, long n) {
-    double acc = 0;
-    for (long i = 0; i < n; i++) {
-        acc += a[i] * b[i];
+double compare_vec(double* v1, double* v2, long n) {
+    int diff = 0;
+#pragma omp parallel for reduction (+: diff)
+    for (int i = 0; i < n; i++) {
+        diff += std::abs(v1[i]-v2[i]);
     }
-    *res = acc;
+    return diff;
 }
 
-void inner_product(double *res, const double *a, const double *b, long n) {
-    double sum = 0;
-#pragma omp parallel for reduction (+: sum)
+void sequential_vec_mat_mul(double* res, const double* mat, const double* vec, long n) {
     for (long i = 0; i < n; i++) {
-        sum += a[i] * b[i];
+        double sum = 0;
+        for (int j = 0; j < n; j++) {
+            sum += vec[j]*mat[j+i*n];
+        }
+        res[i] = sum;
     }
-    *res = sum;
+}
+
+void openmp_vec_mat_mul(double* res, const double* mat, const double* vec, long n) {
+#pragma omp parallel for schedule(static)
+    for (long i = 0; i < n; i++) {
+        double sum = 0;
+#pragma omp parallel for reduction (+: sum)
+        for (int j = 0; j < n; j++) {
+            sum += vec[j]*mat[j+i*n];
+        }
+        res[i] = sum;
+    }
 }
 
 int main() {
-    long n = (1UL << 25); // 2^25
 
-    // malloc
-    auto *a = (double *) malloc(n * sizeof(double));
-    auto *b = (double *) malloc(n * sizeof(double));
-    auto *temp = (double *) malloc(n * sizeof(double));
+    long n = 1<<12;
+    double* vec = (double *) malloc(n * sizeof(double));
+    double* mat = (double *) malloc(n*n * sizeof(double));
+    double* vec_ref = (double *) malloc(n * sizeof(double));
+    double* vec_omp = (double *) malloc(n * sizeof(double));
 
     // random
     std::random_device rd;
     std::default_random_engine gen(rd());
     std::uniform_real_distribution<double> uniformRealDistribution(-1, 1);
 
-    // init
-    omp_set_num_threads(6);
-//#pragma omp parallel for schedule(static)
-    for (long i = 0; i < n; i++) {
-        a[i] = uniformRealDistribution(gen);
-        b[i] = uniformRealDistribution(gen);
+    for (long i; i < n; i++) {
+        vec[i] = uniformRealDistribution(gen);
+        for (long j; j < n; j++) {
+            mat[j+i*n] = uniformRealDistribution(gen);
+        }
     }
 
     double time;
+
+    // sequential calculation
     double tick;
 
     tick = omp_get_wtime();
-    double ref;
-    sequential_vec_inner_product(&ref, a, b, n);
+    sequential_vec_mat_mul(vec_ref, mat, vec, n);
     time = omp_get_wtime() - tick;
     printf("Sequential benchmark\n");
     printf("Time = %f\n", time);
-    printf("CPU Bandwidth = %f GB/s\n", 2 * n * sizeof(double) / time / 1e9);
-    printf("Error = %f\n", std::abs(ref - ref));
-
-    printf("------------\n");
+    printf("CPU Bandwidth = %f GB/s\n", (n*n+n)*sizeof(double) / time/1e9);
+    printf("Error = %f\n", compare_vec(vec_ref, vec_ref, n));
 
     // openmp calculation
     tick = omp_get_wtime();
-    double openmp_res;
-    inner_product(&openmp_res, a, b, n);
+    openmp_vec_mat_mul(vec_omp, mat, vec, n);
     time = omp_get_wtime() - tick;
     printf("Openmp benchmark\n");
     printf("Time = %f\n", time);
-    printf("CPU Bandwidth = %f GB/s\n", 2 * n * sizeof(double) / time / 1e9);
-    printf("Error = %f\n", std::abs(openmp_res - openmp_res));
+    printf("CPU Bandwidth = %f GB/s\n", (n*n+n)*sizeof(double) / time/1e9);
+    printf("Error = %f\n", compare_vec(vec_ref, vec, n));
 
     printf("------------\n");
-
-    // free
-    free(a);
-    free(b);
-    free(temp);
 }
+

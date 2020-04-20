@@ -153,7 +153,7 @@ int main() {
     time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
     printf("Time = %f\n", time);
-    printf("GPU Bandwidth = %f GB/s\n", 1*n*sizeof(double) / time/1e9);
+    printf("GPU Bandwidth = %f GB/s\n", 2*n*sizeof(double) / time/1e9);
     printf("Error = %f\n", std::abs(cuda_res-ref));
 
     // free
