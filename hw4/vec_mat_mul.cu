@@ -149,6 +149,7 @@ int main() {
     dim3 grid_dim(n/BLOCK_SIZE, n/BLOCK_SIZE);
     // map
     gpu_map_vec_mat_mul<<<grid_dim, block_dim>>>(mat_d, vec_d, temp_mat_d, n);
+    cudaDeviceSynchronize();
     printf("stop 1");
 
     // reduce
