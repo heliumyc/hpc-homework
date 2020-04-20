@@ -7,14 +7,6 @@
 #include <random>
 #include <string>
 
-void Check_CUDA_Error(const char *message) {
-    cudaError_t error = cudaGetLastError();
-    if (error != cudaSuccess) {
-        fprintf(stderr, "ERROR: %s: %s\n", message, cudaGetErrorString(error));
-        exit(-1);
-    }
-}
-
 // cpu sequential computation
 void sequential_vec_inner_product(double *res, const double *a, const double *b, long n) {
     double acc = 0;
@@ -25,20 +17,11 @@ void sequential_vec_inner_product(double *res, const double *a, const double *b,
 }
 
 // openmp cpu map
-void openmp_map_vec_inner_product(const double *a, const double *b, double *c, long n) {
-#pragma omp parallel for schedule(static)
-    for (long i = 0; i < n; i++) {
-        c[i] = a[i]*b[i];
-    }
-}
-
-// openmp cpu reduce
-void openmp_reduce_sum(double *res, const double *c, long n) {
+void openmp_inner_product(double *res, const double *a, const double *b, long n) {
     double sum = 0;
-//    omp_set_num_threads(6);
 #pragma omp parallel for reduction (+: sum)
     for (long i = 0; i < n; i++) {
-        sum += c[i];
+        sum += a[i] * b[i];
     }
     *res = sum;
 }
@@ -107,7 +90,9 @@ int main() {
     double time;
 
     // sequential calculation
-    double tick = omp_get_wtime();
+    double tick;
+
+    tick = omp_get_wtime();
     double ref;
     sequential_vec_inner_product(&ref, a, b, n);
     time = omp_get_wtime() - tick;
@@ -120,13 +105,12 @@ int main() {
 
     // openmp calculation
     tick = omp_get_wtime();
-    openmp_map_vec_inner_product(a, b, temp, n);
     double openmp_res;
-    openmp_reduce_sum(&openmp_res, temp, n);
+    openmp_inner_product(&openmp_res, a, b, n);
     time = omp_get_wtime() - tick;
     printf("Openmp benchmark\n");
     printf("Time = %f\n", time);
-    printf("CPU Bandwidth = %f GB/s\n", 4*n*sizeof(double) / time/1e9);
+    printf("CPU Bandwidth = %f GB/s\n", 2*n*sizeof(double) / time/1e9);
     printf("Error = %f\n", std::abs(openmp_res-ref));
 
     printf("------------\n");
