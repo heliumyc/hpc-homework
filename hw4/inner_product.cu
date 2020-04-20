@@ -172,21 +172,26 @@ int main() {
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
-    double* sum_d = extra_d;
+    double cuda_res;
 
     gpu_map_vec_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, temp, n);
 
-    long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
-    reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d, temp_d, n);
-    while (Nb > 1) {
-        long lastN = Nb;
-        Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
-        reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d + lastN, sum_d, lastN);
-        sum_d += lastN;
-    }
-    double cuda_res;
-    cudaMemcpyAsync(&cuda_res, sum_d, 1*sizeof(double), cudaMemcpyDeviceToHost);
-    cudaDeviceSynchronize();
+    cudaMemcpyAsync(temp, temp_d, n*sizeof(double), cudaMemcpyDeviceToHost);
+    openmp_reduce_sum(&cuda_res, temp, n);
+
+
+//    double* sum_d = extra_d;
+//    long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
+//    reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d, temp_d, n);
+//    while (Nb > 1) {
+//        long lastN = Nb;
+//        Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
+//        reduction_kernel0<<<Nb,BLOCK_SIZE>>>(sum_d + lastN, sum_d, lastN);
+//        sum_d += lastN;
+//    }
+//    cudaMemcpyAsync(&cuda_res, sum_d, 1*sizeof(double), cudaMemcpyDeviceToHost);
+//    cudaDeviceSynchronize();
+
     time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
     printf("Time = %f\n", time/1e9);
