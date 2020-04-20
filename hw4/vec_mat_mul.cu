@@ -149,11 +149,13 @@ int main() {
     dim3 grid_dim(n/BLOCK_SIZE, n/BLOCK_SIZE);
     // map
     gpu_map_vec_mat_mul<<<grid_dim, block_dim>>>(mat_d, vec_d, temp_mat_d, n);
+    printf("stop 1");
 
     // reduce
     double* sum_d = extra_d; // for reduction intermediate number
     long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
     gpu_reduce_vec_mat_mul << < grid_dim, block_dim >> > (sum_d, temp_mat_d, n);
+    printf("stop 2");
     while (Nb > 1) {
         long next_buffer_offset = Nb*n;
         Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
