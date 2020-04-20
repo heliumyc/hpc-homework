@@ -132,6 +132,7 @@ int main() {
     printf("------------\n");
 
     // cuda
+    
 
     // init
     double* vec_d;
