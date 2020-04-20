@@ -92,9 +92,9 @@ int main() {
     std::default_random_engine gen(rd());
     std::uniform_real_distribution<double> uniformRealDistribution(-1, 1);
 
-    for (long i; i < n; i++) {
+    for (long i = 0; i < n; i++) {
         vec[i] = uniformRealDistribution(gen);
-        for (long j; j < n; j++) {
+        for (long j = 0; j < n; j++) {
             mat[j+i*n] = uniformRealDistribution(gen);
         }
     }
@@ -133,7 +133,7 @@ int main() {
     cudaMalloc(&mat_d, n*n*sizeof(double));
     cudaMalloc(&temp_mat_d, n*n*sizeof(double));
     cudaMemcpyAsync(vec_d, vec, n*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpyAsync(mat_d, mat, n*n*sikzeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(mat_d, mat, n*n*sizeof(double), cudaMemcpyHostToDevice);
 
     // alloc extra space 
     double* extra_d;
@@ -148,7 +148,7 @@ int main() {
     dim3 block_dim(BLOCK_SIZE, BLOCK_SIZE);
     dim3 grid_dim(n/BLOCK_SIZE, n/BLOCK_SIZE);
     // map
-    gpu_map_vec_mat_mul<<<grid_dim, block_dim>>>(mat_d, vec_d, temp_mat_d);
+    gpu_map_vec_mat_mul<<<grid_dim, block_dim>>>(mat_d, vec_d, temp_mat_d, n);
 
     // reduce
     double* sum_d = extra_d; // for reduction intermediate number
