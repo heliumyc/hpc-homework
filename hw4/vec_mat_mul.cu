@@ -90,10 +90,18 @@ void Check_CUDA_Error(const char *message){
 int main() {
 
     long n = 1<<12;
-    double* vec = (double *) malloc(n * sizeof(double));
-    double* mat = (double *) malloc(n*n * sizeof(double));
-    double* vec_ref = (double *) malloc(n * sizeof(double));
-    double* vec_mul = (double *) malloc(n * sizeof(double));
+//    double* vec = (double *) malloc(n * sizeof(double));
+//    double* mat = (double *) malloc(n*n * sizeof(double));
+//    double* vec_ref = (double *) malloc(n * sizeof(double));
+//    double* vec_mul = (double *) malloc(n * sizeof(double));
+    double* vec;
+    double* mat;
+    double* vec_ref;
+    double* vec_mul;
+    cudaMallocHost((void**)&vec, n * sizeof(double));
+    cudaMallocHost((void**)&mat, n*n * sizeof(double));
+    cudaMallocHost((void**)&vec_ref, n * sizeof(double));
+    cudaMallocHost((void**)&vec_mul, n * sizeof(double));
 
     // random
     std::random_device rd;
@@ -132,7 +140,7 @@ int main() {
     printf("------------\n");
 
     // cuda
-    
+
 
     // init
     double* vec_d;
