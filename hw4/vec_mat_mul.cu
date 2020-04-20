@@ -141,19 +141,15 @@ int main() {
 
     // cuda
 
-
     // init
     double* vec_d;
     double* mat_d;
     double* temp_mat_d;
     cudaMalloc(&vec_d, n*sizeof(double));
-    printf("alloc 1");
     Check_CUDA_Error("malloc vec_d failed");
     cudaMalloc(&mat_d, n*n*sizeof(double));
-    printf("alloc 2");
     Check_CUDA_Error("malloc mat_d failed");
     cudaMalloc(&temp_mat_d, n*n*sizeof(double));
-    printf("alloc 3");
     Check_CUDA_Error("malloc temp_mat failed");
     cudaMemcpyAsync(vec_d, vec, n*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(mat_d, mat, n*n*sizeof(double), cudaMemcpyHostToDevice);
@@ -175,16 +171,19 @@ int main() {
     gpu_map_vec_mat_mul<<<grid_dim, block_dim>>>(mat_d, vec_d, temp_mat_d, n);
     cudaDeviceSynchronize();
     printf("stop 1");
+    Check_CUDA_Error("map failed");
 
     // reduce
     double* sum_d = extra_d; // for reduction intermediate number
     long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
     gpu_reduce_vec_mat_mul << < grid_dim, block_dim >> > (sum_d, temp_mat_d, n);
+    Check_CUDA_Error("first reduce failed");
     printf("stop 2");
     while (Nb > 1) {
         long next_buffer_offset = Nb*n;
         Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
         dim3 cur_grid(n/BLOCK_SIZE, Nb/BLOCK_SIZE);
+        Check_CUDA_Error("some reduce failed");
         gpu_reduce_vec_mat_mul << < cur_grid, block_dim >> > (sum_d + next_buffer_offset, sum_d, Nb);
         sum_d += next_buffer_offset; // currently sum_d point to reduction result
     }
@@ -193,6 +192,7 @@ int main() {
     // currently sum_d is out anwser
     cudaMemcpyAsync(&vec_mul, sum_d, n*sizeof(double), cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
+    Check_CUDA_Error("copy result back failed");
 
     time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
@@ -200,10 +200,10 @@ int main() {
     printf("GPU Bandwidth = %f GB/s\n", 2*n*sizeof(double) / time/1e9);
     printf("Error = %f\n", compare_vec(vec_ref, vec_mul, n));
 
-    free(vec);
-    free(mat);
-    free(vec_ref);
-    free(vec_mul);
+    cudaFreeHost(vec);
+    cudaFreeHost(mat);
+    cudaFreeHost(vec_ref);
+    cudaFreeHost(vec_mul);
 
     cudaFree(vec_d);
     cudaFree(mat_d);
