@@ -168,7 +168,7 @@ int main() {
     dim3 block_dim(BLOCK_SIZE, BLOCK_SIZE);
     dim3 grid_dim(n / BLOCK_SIZE, n / BLOCK_SIZE);
     // map
-    gpu_map_vec_mat_mul << < grid_dim, block_dim > >>(mat_d, vec_d, temp_mat_d, n);
+    gpu_map_vec_mat_mul <<< grid_dim, block_dim >>> (mat_d, vec_d, temp_mat_d, n);
     cudaDeviceSynchronize();
     printf("stop 1");
     Check_CUDA_Error("map failed");
@@ -176,7 +176,7 @@ int main() {
     // reduce
     double *sum_d = extra_d; // for reduction intermediate number
     long Nb = (n + BLOCK_SIZE - 1) / (BLOCK_SIZE);
-    gpu_reduce_vec_mat_mul << < grid_dim, block_dim > >> (sum_d, temp_mat_d, n);
+    gpu_reduce_vec_mat_mul <<< grid_dim, block_dim >>> (sum_d, temp_mat_d, n);
     Check_CUDA_Error("first reduce failed");
     printf("stop 2");
     while (Nb > 1) {
