@@ -174,7 +174,7 @@ int main() {
     tick = omp_get_wtime();
     double cuda_res;
 
-    gpu_map_vec_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, temp, n);
+    gpu_map_vec_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, temp_d, n);
 
     double* buf;
     cudaMallocHost((void**)&buf, n * sizeof(double));
