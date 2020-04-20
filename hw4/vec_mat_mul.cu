@@ -3,13 +3,13 @@
 //
 
 #include <algorithm>
-#include <stdio.h>
+#include <cstdio>
 #include <omp.h>
 #include <random>
 #include <string>
 
 double compare_vec(double* v1, double* v2, long n) {
-    int diff = 0;
+    double diff = 0;
 #pragma omp parallel for reduction (+: diff)
     for (int i = 0; i < n; i++) {
         diff += std::abs(v1[i]-v2[i]);
@@ -143,7 +143,7 @@ int main() {
     cudaDeviceSynchronize();
 
 
-    tick = omp_get_wtime()
+    tick = omp_get_wtime();
 
     dim3 block_dim(BLOCK_SIZE, BLOCK_SIZE);
     dim3 grid_dim(n/BLOCK_SIZE, n/BLOCK_SIZE);
@@ -157,7 +157,7 @@ int main() {
     while (Nb > 1) {
         long next_buffer_offset = Nb*n;
         Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
-        dim3 cur_grid(n/BLOCK_SIZE, Nb/BLOCK_SIZE)
+        dim3 cur_grid(n/BLOCK_SIZE, Nb/BLOCK_SIZE);
         gpu_reduce_vec_mat_mul << < cur_grid, block_dim >> > (sum_d + next_buffer_offset, sum_d, Nb);
         sum_d += next_buffer_offset; // currently sum_d point to reduction result
     }
@@ -167,7 +167,7 @@ int main() {
     cudaMemcpyAsync(&vec_mul, sum_d, n*sizeof(double), cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
 
-    time = omp_get_wtime() - tick
+    time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
     printf("Time = %f\n", time);
     printf("GPU Bandwidth = %f GB/s\n", 2*n*sizeof(double) / time/1e9);
