@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <omp.h>
+#include <algorithm>
 
 int N = 50;
 int SIZE = N+2; // always N+2
@@ -52,11 +53,7 @@ long jacobi_cpu(double* u, double* v) {
                 v[i*SIZE+j] = (hSqr+u[(i-1)*SIZE+j]+u[i*SIZE+j-1]+u[(i+1)*SIZE+j]+u[i*SIZE+j+1])/4;
             }
         }
-//        std::swap(u, v);
-        double* temp = u;
-        u = v;
-        v = temp;
-        curResidual = calcResidual(u);
+        std::swap(u, v);
 
         if (initResidual/curResidual > 1e+6) {
             break;
@@ -161,8 +158,7 @@ int main(int argc, char** argv) {
 
     printf("=====================\n");
     // gpu
-//    double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
-//    double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
+
     Check_CUDA_Error("alloc host failed");
     for (int k = 0; k < SIZE*SIZE; ++k) {
         u[k] = 0;
@@ -180,7 +176,6 @@ int main(int argc, char** argv) {
     dim3 grid((SIZE+TILE_LEN-1)/TILE_LEN, (SIZE+TILE_LEN-1)/TILE_LEN);
     dim3 block(TILE_LEN, TILE_LEN);
 
-    tick = omp_get_wtime();
     long gpu_iter = 0;
     double init_res = 0;
     cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
@@ -195,17 +190,13 @@ int main(int argc, char** argv) {
 
     tick = omp_get_wtime();
 
-    maxIter = 8000;
     double cur_res = 0;
     while (gpu_iter < maxIter) {
         cur_res = 0;
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
         cudaDeviceSynchronize();
-//        std::swap(u_d, v_d);
-        double* temp = u_d;
-        u_d = v_d;
-        v_d = temp;
+        std::swap(u_d, v_d);
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cur_res = std::sqrt(cur_res);
