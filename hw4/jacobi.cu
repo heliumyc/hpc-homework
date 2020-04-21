@@ -159,6 +159,8 @@ int main(int argc, char** argv) {
     tok = omp_get_wtime();
     printf("Openmp cpu\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
+    cudaFree(u);
+    cudaFree(v);
 
     printf("=====================\n");
     // gpu
@@ -224,8 +226,7 @@ int main(int argc, char** argv) {
     printf("Residual: %lf\n", cur_res);
 
     cudaFree(uu);
-    cudaFree(u);
-    cudaFree(v);
+
     cudaFree(vv);
     cudaFree(u_d);
     cudaFree(v_d);
