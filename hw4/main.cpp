@@ -3,7 +3,7 @@
 #include <cmath>
 #include <omp.h>
 
-long N = 100;
+long N = 50;
 long SIZE = N+2; // always N+2
 long maxIter = 30000000;
 double h, hSqr, hSqrInverse;
@@ -132,38 +132,11 @@ int main(int argc, char** argv) {
     double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
     printf("alloc1 host done");
     double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
-
-    // gpu
-
-//    // allocate
-//    double* u_d;
-//    double* v_d;
-//    double* f_d;
-//    cudaMalloc(&u_d, SIZE * SIZE * sizeof(double));
-//    cudaMalloc(&v_d, SIZE * SIZE * sizeof(double));
-//    cudaMalloc(&f_d, SIZE * SIZE * sizeof(double));
-//
-//    dim3 grid(N/TILE_LEN, N/TILE_LEN);
-//    dim3 block(TILE_LEN, TILE_LEN);
-//
-//    long gpu_iter = 0;
-//
-//    gpu_residual_calc<<<grid, block>>>(u_d);
-//
-//    while (gpu_iter < maxIter) {
-//
-//    }
-//
-//    tick = omp_get_wtime();
-//
-//
-//    printf("GPU\n");
-//    printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
-//    tok = omp_get_wtime();
-//
-//    free(u);
-//    free(v);
-//    cudaFree(u_d);
-//    cudaFree(v_d);
-//    cudaFree(f_d);
+    printf("alloc2 host done");
+    for (int k = 0; k < SIZE*SIZE; ++k) {
+        if (k > 10000)
+            printf("fuc");
+        uu[k] = 0;
+        vv[k] = 0;
+    }
 }
