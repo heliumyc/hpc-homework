@@ -188,6 +188,7 @@ int main(int argc, char** argv) {
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
     cudaDeviceSynchronize();
     printf("%f\n", init_res);
+    init_res = std::sqrt(init_res);
 
 
     tick = omp_get_wtime();
