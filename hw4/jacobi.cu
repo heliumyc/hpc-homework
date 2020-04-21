@@ -198,9 +198,9 @@ int main(int argc, char** argv) {
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
 //        std::swap(u_d, v_d);
-        double* temp = u;
-        u = v;
-        v = temp;
+        double* temp = u_d;
+        u_d = v_d;
+        v_d = temp;
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cudaDeviceSynchronize();
