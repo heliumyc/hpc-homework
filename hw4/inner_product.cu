@@ -150,6 +150,4 @@ int main() {
     cudaFreeHost(temp);
     cudaFree(a_d);
     cudaFree(b_d);
-    cudaFree(temp_d);
-    cudaFree(extra_d);
 }
