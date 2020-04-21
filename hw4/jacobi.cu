@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
     maxIter = 200;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
-        cudaMemsetAsync(&gpu_residual, 0, sizeof(double));
+        cudaMemcpyToSymbol(gpu_residual, 0, sizeof(double));
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
