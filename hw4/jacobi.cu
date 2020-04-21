@@ -161,12 +161,9 @@ int main(int argc, char** argv) {
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
 
     printf("=====================\n");
-    printf("=====================\n");printf("=====================\n");printf("=====================\n");printf("=====================\n");
     // gpu
-    double* uu;
-    double* vv;
-    cudaMallocHost((void**)&uu, SIZE*SIZE * sizeof(double));
-    cudaMallocHost((void**)&vv, SIZE*SIZE * sizeof(double));
+    double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
+    double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
     Check_CUDA_Error("alloc host failed");
     for (int i = 0; i < SIZE*SIZE; ++i) {
         uu[i] = 0;
