@@ -64,7 +64,7 @@ __global__ void gpu_inner_product(const double *a, const double *b, long N) {
         __syncthreads();
     }
 
-    if (threadIdx.x == 0) atomicAdd2(global_sum, smem[0]);
+    if (threadIdx.x == 0) atomicAdd2(&global_sum, smem[0]);
 }
 
 int main() {
