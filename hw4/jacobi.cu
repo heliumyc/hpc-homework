@@ -142,8 +142,8 @@ int main(int argc, char** argv) {
     hSqr = h*h;
     hSqrInverse = 1/hSqr;
 
-    double* u;
-    double* v;
+    double* u = (double*) malloc(SIZE*SIZE*sizeof(double));
+    double* v = (double*) malloc(SIZE*SIZE*sizeof(double));
     cudaMallocHost((void**)&u, SIZE*SIZE * sizeof(double));
     cudaMallocHost((void**)&v, SIZE*SIZE * sizeof(double));
     // initialization
@@ -159,8 +159,8 @@ int main(int argc, char** argv) {
     tok = omp_get_wtime();
     printf("Openmp cpu\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
-    cudaFree(u);
-    cudaFree(v);
+    free(u);
+    free(v);
 
     printf("=====================\n");
     // gpu
