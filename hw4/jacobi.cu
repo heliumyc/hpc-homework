@@ -84,7 +84,7 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     if(i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
         diff = diff*diff;
-        atomicAdd2(&gpu_residual, diff);
+        atomicAdd2(&gpu_residual, 1);
 //        smem[threadIdx.x][threadIdx.y] = diff;
         __syncthreads();
     }
