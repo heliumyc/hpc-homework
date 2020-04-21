@@ -195,8 +195,8 @@ int main(int argc, char** argv) {
     double cur_res = 0;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
-//        cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
-        cudaMemset(&gpu_residual, 0, sizeof(double));
+        cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
+//        cudaMemset(&gpu_residual, 0, sizeof(double));
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
