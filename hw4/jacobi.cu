@@ -140,8 +140,10 @@ int main(int argc, char** argv) {
     hSqr = h*h;
     hSqrInverse = 1/hSqr;
 
-    auto* u = new double[MAT_SIZE];
-    auto* v = new double[MAT_SIZE];
+    double* u;
+    double* v;
+    cudaMallocHost((void**)&u, MAT_SIZE * sizeof(double));
+    cudaMallocHost((void**)&v, MAT_SIZE * sizeof(double));
     // initialization
     for (int i = 0; i < SIZE*SIZE; ++i) {
         u[i] = 0;
@@ -160,7 +162,6 @@ int main(int argc, char** argv) {
 
     // gpu
 
-//    // allocate
     for (int i = 0; i < SIZE*SIZE; ++i) {
         u[i] = 0;
         v[i] = 0;
@@ -212,8 +213,8 @@ int main(int argc, char** argv) {
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
     printf("Residual: %lf\n", cur_res);
 
-    free(u);
-    free(v);
+    cudaFree(u);
+    cudaFree(v);
     cudaFree(u_d);
     cudaFree(v_d);
 }

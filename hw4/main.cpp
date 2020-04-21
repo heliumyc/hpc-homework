@@ -3,7 +3,7 @@
 #include <cmath>
 #include <omp.h>
 
-long N = 200;
+long N = 100;
 long SIZE = N+2; // always N+2
 long maxIter = INT32_MAX;
 double h, hSqr, hSqrInverse;
@@ -121,6 +121,10 @@ int main(int argc, char** argv) {
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
 
     printf("=====================\n");
+    for (int i = 0; i < SIZE*SIZE; ++i) {
+        u[i] = 0;
+        v[i] = 0;
+    }
 
     // gpu
 
