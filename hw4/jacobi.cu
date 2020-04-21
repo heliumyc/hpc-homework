@@ -100,7 +100,7 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
     }
 }
 
-__global__ void gpu_res(const double* u, int n) {
+__global__ void gpu_res_calc(const double* u, int n) {
     __shared__ double smem[TILE_LEN][TILE_LEN];
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
@@ -187,9 +187,11 @@ int main(int argc, char** argv) {
     dim3 block(TILE_LEN, TILE_LEN);
 
     long gpu_iter = 1;
-    double init_res = calcResidual(u);
-    init_res = std::sqrt(init_res);
+    double init_res = 0;
     cudaMemcpyToSymbol(gpu_residual, 0, sizeof(double)); // load to gpu global var
+    gpu_res_calc<<<grid, block>>>(u_d, N);
+    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double));
+    init_res = std::sqrt(init_res);
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
@@ -202,7 +204,7 @@ int main(int argc, char** argv) {
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
-        gpu_res<<<grid, block>>>(u_d, N);
+        gpu_res_calc<<<grid, block>>>(u_d, N);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cur_res = std::sqrt(cur_res);
         cudaDeviceSynchronize();
