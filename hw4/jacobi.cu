@@ -169,14 +169,12 @@ int main(int argc, char** argv) {
     cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
 
-    Check_CUDA_Error("init failed");
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
     gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
     cudaDeviceSynchronize();
-    printf("%f\n", init_res);
     init_res = std::sqrt(init_res);
 
     double cur_res = 0;
