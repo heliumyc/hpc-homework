@@ -64,7 +64,7 @@ long jacobi_cpu(double* u, double* v) {
     return k;
 }
 
-#define TILE_LEN 32 // block size be 1024
+#define TILE_LEN 16 // block size be 16*16
 
 __device__ double gpu_residual;
 
@@ -87,22 +87,20 @@ __device__ double atomicAdd2(double* address, double val)
 }
 
 
-__global__ void gpu_res_calc(const double* u, int n) {
+__global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     __shared__ double smem[TILE_LEN][TILE_LEN];
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
 
     smem[threadIdx.x][threadIdx.y] = 0;
     int size = n+2;
-    double _h = 1./(double) (n+1);
-    double _hsqr = _h*_h;
-    double _hsqrinverse = 1/_hsqr;
-
     if(i >= 1 && j >= 1 && i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
-        smem[threadIdx.x][threadIdx.y] = diff*diff;
+        diff = diff*diff;
+        smem[threadIdx.x][threadIdx.y] = diff;
         __syncthreads();
     }
+
     if (threadIdx.y == 0) {
         double acc = 0;
         for (int k = 0; k < TILE_LEN; k++) {
@@ -111,6 +109,7 @@ __global__ void gpu_res_calc(const double* u, int n) {
         smem[threadIdx.x][0] = acc;
         __syncthreads();
     }
+
     if (threadIdx.x == 0 && threadIdx.y == 0) {
         double acc = 0;
         for (int k = 0; k < TILE_LEN; k++) {
@@ -120,14 +119,12 @@ __global__ void gpu_res_calc(const double* u, int n) {
     }
 }
 
-__global__ void gpu_jacobi(double* u, double* v, int n) {
+__global__ void gpu_jacobi(double* u, double* v, int n, double hsqr) {
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
     int size = n+2;
-    double _h = 1./(double) (n+1);
-    double _hsqr = _h*_h;
     if(i >= 1 && j >= 1 && i <= n && j <= n){
-        v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+        v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
     }
 }
 
@@ -184,26 +181,28 @@ int main(int argc, char** argv) {
 
     long gpu_iter = 1;
     double init_res = 0;
-    cudaMemcpyToSymbol(gpu_residual, 0, sizeof(double)); // load to gpu global var
-    gpu_res_calc<<<grid, block>>>(u_d, N);
-    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double));
-    init_res = std::sqrt(init_res);
+    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
+    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
+    gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
+    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+    cudaDeviceSynchronize();
+    init_res = std::sqrt(init_res);
 
     double cur_res = 0;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
-//        cudaMemset(&gpu_residual, 0, sizeof(double));
-        gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
+        gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
-        gpu_res_calc<<<grid, block>>>(u_d, N);
+        gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
-        cudaDeviceSynchronize();
         cur_res = std::sqrt(cur_res);
+        cudaDeviceSynchronize();
         if (init_res/cur_res > 1e+6) {
             break;
         }
