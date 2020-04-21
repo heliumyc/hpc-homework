@@ -129,7 +129,7 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
 //    }
 }
 
-__global__ void gpu_jacobi(double* u, double* v, double hsqr, int n) {
+__global__ void gpu_jacobi(double* u, double* v, int n, double hsqr) {
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
     int size = n+2;
@@ -201,10 +201,10 @@ int main(int argc, char** argv) {
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
         cudaDeviceSynchronize();
 //        std::swap(u_d, v_d);
-//        double* temp = u_d;
-//        u_d = v_d;
-//        v_d = temp;
-        gpu_residual_calc<<<grid, block>>>(v_d, N, hSqrInverse);
+        double* temp = u_d;
+        u_d = v_d;
+        v_d = temp;
+        gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cudaDeviceSynchronize();
         if (init_res/cur_res > 1e+6) {
