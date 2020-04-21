@@ -195,9 +195,10 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     printf("%f\n", init_res);
 
-    maxIter = 10;
+    maxIter = 3000;
+    double cur_res = 0;
     while (gpu_iter < maxIter) {
-        double cur_res = 0;
+        cur_res = 0;
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
 //        std::swap(u_d, v_d);
@@ -210,9 +211,10 @@ int main(int argc, char** argv) {
         if (init_res/cur_res > 1e+6) {
             break;
         }
-        printf("%lf\n", cur_res);
+//        printf("%lf\n", cur_res);
         gpu_iter++;
     }
+    printf("%lf\n", cur_res);
 //
 //    tok = omp_get_wtime();
 //    printf("GPU\n");
