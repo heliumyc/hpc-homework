@@ -163,9 +163,13 @@ int main(int argc, char** argv) {
     printf("=====================\n");
     // gpu
     double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
+    printf("alloc1 host done");
     double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
+    printf("alloc2 host done");
     Check_CUDA_Error("alloc host failed");
     for (int k = 0; k < SIZE*SIZE; ++k) {
+        if (k > 10000)
+            printf("fuc");
         uu[k] = 0;
         vv[k] = 0;
     }
