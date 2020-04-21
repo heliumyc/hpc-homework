@@ -147,7 +147,6 @@ int main(int argc, char** argv) {
 
     printf("Jacobi 2D\n");
     printf("=====================\n");
-    printf("%d, %d", N, maxIter);
 
     double* u = (double*) malloc(SIZE*SIZE*sizeof(double));
     double* v = (double*) malloc(SIZE*SIZE*sizeof(double));
