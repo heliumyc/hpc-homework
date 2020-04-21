@@ -52,10 +52,8 @@ long jacobi_cpu(double* u, double* v) {
                 v[i*SIZE+j] = (hSqr+u[(i-1)*SIZE+j]+u[i*SIZE+j-1]+u[(i+1)*SIZE+j]+u[i*SIZE+j+1])/4;
             }
         }
-        double* temp = u;
-        u = v;
-        v = temp;
-//        std::swap(*u, *v);
+
+        std::swap(u, v);
 
         curResidual = calcResidual(u);
         if (initResidual/curResidual > 1e+6) {
