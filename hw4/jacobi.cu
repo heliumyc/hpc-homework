@@ -88,22 +88,32 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
         __syncthreads();
     }
 
-    if (threadIdx.y == 0) {
-        double acc = 0;
-        for (int k = 0; k < TILE_LEN; k++) {
-            acc += smem[threadIdx.x][k];
-        }
-        smem[threadIdx.x][0] = acc;
-        __syncthreads();
-    }
-
     if (threadIdx.x == 0 && threadIdx.y == 0) {
         double acc = 0;
         for (int k = 0; k < TILE_LEN; k++) {
-            acc += smem[k][0];
+            for (int p = 0; p < TILE_LEN; p++) {
+                acc += smem[p][k];
+            }
         }
         atomicAdd2(&gpu_residual, acc);
     }
+
+//    if (threadIdx.y == 0) {
+//        double acc = 0;
+//        for (int k = 0; k < TILE_LEN; k++) {
+//            acc += smem[threadIdx.x][k];
+//        }
+//        smem[threadIdx.x][0] = acc;
+//        __syncthreads();
+//    }
+//
+//    if (threadIdx.x == 0 && threadIdx.y == 0) {
+//        double acc = 0;
+//        for (int k = 0; k < TILE_LEN; k++) {
+//            acc += smem[k][0];
+//        }
+//        atomicAdd2(&gpu_residual, acc);
+//    }
 }
 
 __global__ void gpu_jacobi(double* u, double* v, double hsqr, int size) {
