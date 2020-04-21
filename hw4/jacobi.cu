@@ -92,6 +92,7 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
 
+    smem[threadIdx.x][threadIdx.y] = 0;
     int size = n+2;
     if(i >= 1 && j >= 1 && i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
