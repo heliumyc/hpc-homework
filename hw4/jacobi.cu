@@ -83,7 +83,7 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     int size = n+2;
     if(i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
-        diff = std::sqrt(diff);
+        diff = diff*diff;
         smem[threadIdx.x][threadIdx.y] = diff;
         __syncthreads();
     }
