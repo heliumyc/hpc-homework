@@ -193,6 +193,7 @@ int main() {
     printf("out of loop\n");
     cudaMemcpy(&vec_mul, sum_d-n, n * sizeof(double), cudaMemcpyDeviceToHost);
     Check_CUDA_Error("copy result back failed");
+    printf("out of loop\n");
     cudaDeviceSynchronize();
 
     time = omp_get_wtime() - tick;
