@@ -5,8 +5,7 @@ STD:=-std=c++11
 
 .PHONY: all
 
-all:  mulvec innerproduct jacobi;
-
+all:  mulvec innerproduct jacobi
 
 mulvec:
 	$(CC) $(CFLAGS) $(STD) $(OMP) -o vec_mat_mul vec_mat_mul.cu
