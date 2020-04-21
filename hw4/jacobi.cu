@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     printf("%f\n", init_res);
 
-    maxIter = 1000;
+    maxIter = 3000;
     double cur_res = 0;
     while (gpu_iter < maxIter) {
         cur_res = 0;
