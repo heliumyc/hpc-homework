@@ -42,6 +42,7 @@ double calcResidual(const double* u) {
  */
 long jacobi_cpu(double* u, double* v) {
     double initResidual = calcResidual(u);
+    printf("%lf", initResidual);
     double curResidual = 0;
     long k;
     for (k = 1; k <= maxIter; ++k) {
