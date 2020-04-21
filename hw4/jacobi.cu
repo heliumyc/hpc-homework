@@ -106,42 +106,6 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
 
 }
 
-__global__ void gpu_res_calc(const double* u, int n) {
-    __shared__ double smem[TILE_LEN][TILE_LEN];
-    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
-    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
-
-    smem[threadIdx.x][threadIdx.y] = 0;
-    int size = n+2;
-
-    double _h = 1./(double) (n+1);
-    double _hsqr = _h*_h;
-    double _hsqrinverse = 1/_hsqr;
-
-    if(i >= 1 && j >= 1 && i <= n && j <= n){
-        double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
-        smem[threadIdx.x][threadIdx.y] = diff*diff;
-        __syncthreads();
-    }
-
-    if (threadIdx.y == 0) {
-        double acc = 0;
-        for (int k = 0; k < TILE_LEN; k++) {
-            acc += smem[threadIdx.x][k];
-        }
-        smem[threadIdx.x][0] = acc;
-        __syncthreads();
-    }
-
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        double acc = 0;
-        for (int k = 0; k < TILE_LEN; k++) {
-            acc += smem[k][0];
-        }
-        atomicAdd2(&gpu_residual, acc);
-    }
-}
-
 int main(int argc, char** argv) {
     printf("Jacobi 2D\n");
     printf("=====================\n");
@@ -181,17 +145,12 @@ int main(int argc, char** argv) {
     dim3 block(TILE_LEN, TILE_LEN);
 
     long gpu_iter = 1;
-    double init_res = 0;
-    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
-    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
-
+    double init_res = calcResidual(u);
+    init_res = std::sqrt(init_res);
+    cudaMemcpyToSymbol(gpu_residual, 0, sizeof(double)); // load to gpu global var
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
-    gpu_res_calc<<<grid, block>>>(u_d, N);
-    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
-    cudaDeviceSynchronize();
-    init_res = std::sqrt(init_res);
 
     double cur_res = 0;
     while (gpu_iter <= maxIter) {
