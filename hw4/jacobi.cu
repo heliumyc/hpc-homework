@@ -98,7 +98,8 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
     double _hsqrinverse = 1/_hsqr;
 
     if(i >= 1 && j >= 1 && i <= n && j <= n){
-        smem[threadIdx.x][threadIdx.y] = sqr((-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1);
+        double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
+        smem[threadIdx.x][threadIdx.y] = diff*diff;
         v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
         __syncthreads();
     }
@@ -134,7 +135,8 @@ __global__ void gpu_res_calc(const double* u, int n) {
     double _hsqrinverse = 1/_hsqr;
 
     if(i >= 1 && j >= 1 && i <= n && j <= n){
-        smem[threadIdx.x][threadIdx.y] = sqr((-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1);
+        double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
+        smem[threadIdx.x][threadIdx.y] = diff*diff;
         __syncthreads();
     }
 
