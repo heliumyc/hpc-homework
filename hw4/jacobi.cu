@@ -95,8 +95,8 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     int size = n+2;
     if(i >= 1 && j >= 1 && i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
-//        diff = diff*diff;
-        atomicAdd2(&gpu_residual, std::abs(diff));
+        diff = diff*diff;
+        atomicAdd2(&gpu_residual, diff);
 //        smem[threadIdx.x][threadIdx.y] = diff;
         __syncthreads();
     }
@@ -208,6 +208,7 @@ int main(int argc, char** argv) {
         v_d = temp;
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
+        cur_res = std::sqrt(cur_res);
         cudaDeviceSynchronize();
         if (init_res/cur_res > 1e+6) {
             break;
