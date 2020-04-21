@@ -184,7 +184,7 @@ int main() {
         Check_CUDA_Error("some reduce failed");
         printf("%ld\n", Nb);
         sum_d += next_buffer_offset; // currently sum_d point to reduction result
-        printf("there is the problem")
+        printf("there is the problem");
     }
     Check_CUDA_Error("loop finish");
 
