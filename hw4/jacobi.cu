@@ -84,7 +84,8 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     if(i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
         diff = diff*diff;
-        smem[threadIdx.x][threadIdx.y] = diff;
+        atomicAdd2(&gpu_residual, diff);
+//        smem[threadIdx.x][threadIdx.y] = diff;
         __syncthreads();
     }
 
@@ -161,7 +162,7 @@ int main(int argc, char** argv) {
     cudaMemcpyAsync(u_d, u, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(v_d, v, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaDeviceSynchronize();
-    
+
     dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
     dim3 block(TILE_LEN, TILE_LEN);
 
