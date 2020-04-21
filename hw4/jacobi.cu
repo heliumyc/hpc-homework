@@ -157,8 +157,6 @@ int main(int argc, char** argv) {
     tok = omp_get_wtime();
     printf("Openmp cpu\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
-    free(u);
-    free(v);
 
     printf("=====================\n");
     // gpu
@@ -192,8 +190,8 @@ int main(int argc, char** argv) {
     long gpu_iter = 0;
     double init_res = 0;
 //
-//    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
-//    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
+    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
 //    printf("test %f", init_res);
 //    Check_CUDA_Error("init failed");
 //    cudaDeviceSynchronize();
@@ -223,6 +221,8 @@ int main(int argc, char** argv) {
 //    printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
 //    printf("Residual: %lf\n", cur_res);
 
+    free(u);
+    free(v);
     free(uu);
     free(vv);
     cudaFree(u_d);
