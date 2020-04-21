@@ -79,7 +79,7 @@ __global__ void gpu_mat_vec_mul(const double* mat, const double* vec, double* re
     }
 
     if(threadIdx.y == 0){
-        atomicAdd2(result + idx, smem[threadIdx.x * blockDim.y + threadIdx.y]);
+        atomicAdd2(result + idx, smem[threadIdx.x][threadIdx.y]);
     }
 }
 
