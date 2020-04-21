@@ -4,7 +4,7 @@
 #include <omp.h>
 #include <algorithm>
 
-int N = 150;
+int N = 100;
 int SIZE = N+2; // always N+2
 int MAT_SIZE = SIZE*SIZE;
 long maxIter = INT32_MAX;
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
     tick = omp_get_wtime();
 
     double cur_res = 0;
-    maxIter = 100;
+    maxIter = 200;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
         cudaMemsetAsync(&gpu_residual, 0, sizeof(double));
