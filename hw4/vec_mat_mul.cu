@@ -39,7 +39,7 @@ void openmp_vec_mat_mul(double *res, const double *mat, const double *vec, long 
     }
 }
 
-#define TILE_LEN 8 // block size be 32*32=1024
+#define TILE_LEN 8 // block size be 8*8=64
 
 __device__ double atomicAdd2(double* address, double val)
 {
@@ -125,7 +125,7 @@ int main() {
     time = omp_get_wtime() - tick;
     printf("Sequential benchmark\n");
     printf("Time = %f\n", time);
-    printf("CPU Bandwidth = %f GB/s\n", (n * n + n) * sizeof(double) / time / 1e9);
+    printf("CPU Bandwidth = %f GB/s\n", (2*n * n + n) * sizeof(double) / time / 1e9);
     printf("Error = %f\n", compare_vec(vec_ref, vec_ref, n));
 
     printf("------------\n");
@@ -136,7 +136,7 @@ int main() {
     time = omp_get_wtime() - tick;
     printf("Openmp benchmark\n");
     printf("Time = %f\n", time);
-    printf("CPU Bandwidth = %f GB/s\n", (n * n + n) * sizeof(double) / time / 1e9);
+    printf("CPU Bandwidth = %f GB/s\n", (2*n * n + n) * sizeof(double) / time / 1e9);
     printf("Error = %f\n", compare_vec(vec_ref, vec_mul, n));
 
     printf("------------\n");
@@ -175,7 +175,7 @@ int main() {
     time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
     printf("Time = %f\n", time);
-    printf("GPU Bandwidth = %f GB/s\n", (n*n+n) * sizeof(double) / time / 1e9);
+    printf("GPU Bandwidth = %f GB/s\n", (2*n*n+n) * sizeof(double) / time / 1e9);
     printf("Error = %f\n", compare_vec(vec_ref, vec_mul, n));
 
     cudaFreeHost(vec);
