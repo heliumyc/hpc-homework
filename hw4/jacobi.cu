@@ -165,12 +165,11 @@ int main(int argc, char** argv) {
     // gpu
     cudaMallocHost((void**)&u, MAT_SIZE * sizeof(double));
     cudaMallocHost((void**)&v, MAT_SIZE * sizeof(double));
+    Check_CUDA_Error("alloc failed");
     for (int i = 0; i < MAT_SIZE; ++i) {
         u[i] = 0;
         v[i] = 0;
     }
-    printf("test stop");
-    printf("%lf", u[0]);
     double* u_d;
     double* v_d;
     cudaMalloc(&u_d, MAT_SIZE * sizeof(double));
