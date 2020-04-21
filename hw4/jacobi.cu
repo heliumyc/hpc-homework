@@ -160,7 +160,8 @@ int main(int argc, char** argv) {
     cudaMalloc(&v_d, MAT_SIZE * sizeof(double));
     cudaMemcpyAsync(u_d, u, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(v_d, v, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
-
+    cudaDeviceSynchronize();
+    
     dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
     dim3 block(TILE_LEN, TILE_LEN);
 
