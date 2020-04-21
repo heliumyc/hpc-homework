@@ -187,12 +187,11 @@ int main() {
         Check_CUDA_Error("error");
         printf("there is the problem\n");
     }
-    Check_CUDA_Error("loop finish");
 
     // fetch mul result
     // currently sum_d is out anwser
     printf("out of loop\n");
-    cudaMemcpyAsync(&vec_mul, sum_d-n, n * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&vec_mul, sum_d-n, n * sizeof(double), cudaMemcpyDeviceToHost);
     Check_CUDA_Error("copy result back failed");
     cudaDeviceSynchronize();
 
