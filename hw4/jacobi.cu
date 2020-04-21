@@ -160,32 +160,25 @@ int main(int argc, char** argv) {
 
     printf("=====================\n");
     // gpu
-    double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
-    printf("alloc1 host done");
-    double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
-    printf("alloc2 host done");
+//    double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
+//    double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
     Check_CUDA_Error("alloc host failed");
     for (int k = 0; k < SIZE*SIZE; ++k) {
-        if (k > 10000)
-            printf("fuc");
-        uu[k] = 0;
-        vv[k] = 0;
+        u[k] = 0;
+        v[k] = 0;
     }
-    printf("alloc host done");
     double* u_d;
     double* v_d;
     cudaMalloc(&u_d, SIZE*SIZE * sizeof(double));
     cudaMalloc(&v_d, SIZE*SIZE * sizeof(double));
-    cudaMemcpyAsync(u_d, uu, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpyAsync(v_d, vv, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(u_d, u, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(v_d, v, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaDeviceSynchronize();
     Check_CUDA_Error("alloc cuda failed");
-    printf("alloc cuda done");
 
     dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
     dim3 block(TILE_LEN, TILE_LEN);
 
-    printf("test stop");
     tick = omp_get_wtime();
     long gpu_iter = 0;
     double init_res = 0;
@@ -223,8 +216,6 @@ int main(int argc, char** argv) {
 
     free(u);
     free(v);
-    free(uu);
-    free(vv);
     cudaFree(u_d);
     cudaFree(v_d);
 }
