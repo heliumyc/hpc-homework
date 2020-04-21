@@ -39,38 +39,48 @@ void openmp_vec_mat_mul(double *res, const double *mat, const double *vec, long 
     }
 }
 
-#define BLOCK_SIZE 32
+#define BLOCK_SIZE 1024
 
-__global__ void MatrixMulKernel(double* mat, double* vec, double* result, int n){
+__device__ double atomicAdd2(double* address, double val)
+{
+    auto* address_as_ull =
+            (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
 
-    __shared__ double block[BLOCK_SIZE][BLOCK_SIZE];  // Shared memory
-    __shared__ double slice[BLOCK_SIZE];
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+                        __double_as_longlong(val +
+                                             __longlong_as_double(assumed)));
 
-    int bx = blockIdx.x;
-    int by = blockIdx.y; // ID thread
-    int tx = threadIdx.x;
-    int ty = threadIdx.y;
+        // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+    } while (assumed != old);
 
-    int row = by * BLOCK_SIZE + ty;
-    int col = bx * BLOCK_SIZE + tx;
+    return __longlong_as_double(old);
+}
 
-    double sum = 0;
+__global__ void gpu_mat_vec_mul(double* mat, double* vec, double* result, int n){
 
-    // Loop over the mat and Nd tiles required to compute the Pd element
-    for (int i = 0; i < n / BLOCK_SIZE; ++i) {
-        // Collaborative loading of mat and Nd tiles into shared memory
-        Mds[ty][tx] = mat[row * n + (i * BLOCK_SIZE + tx)]; // mat(row, i*tile+tx)
-        Nds[ty][tx] = vec[col + (i * BLOCK_SIZE + ty) * n]; // vec(col + (i*tile+ty)*n)
+    __shared__ double smem[BLOCK_SIZE][BLOCK_SIZE];
 
-        __syncthreads();
+    long idx = threadIdx.x + blockIdx.x*blockDim.x;
+    long idy = threadIdx.y + blockIdx.y*blockDim.y;
 
-        for (int k = 0; k < BLOCK_SIZE; ++k)
-            sum +=  Mds[ty][k] * Nds[k][tx];
-
+    if(idx < n && idy < n){
+        smem[threadIdx.x][threadIdx.y] = mat[idx*n + idy] * vec[idy]; // mat(idx, idy) * vec (idy)
         __syncthreads();
     }
 
-    result[row * n + col] = sum;
+    for (long s = blockDim.y /2; s>0; s >>=1) {
+        if (threadIdx.y < s) {
+            smem[threadIdx.x * blockDim.y + threadIdx.y] += smem[threadIdx.x * blockDim.y + threadIdx.y + s];
+        }
+        __syncthreads();
+    }
+
+    if(threadIdx.y == 0){
+        atomicAdd2(result + idx, smem[threadIdx.x * blockDim.y + threadIdx.y]);
+    }
 }
 
 void Check_CUDA_Error(const char *message) {
@@ -136,20 +146,25 @@ int main() {
     // init
     double *vec_d;
     double *mat_d;
-    double *temp_mat_d;
+    double *gpu_result;
     cudaMalloc(&vec_d, n * sizeof(double));
     Check_CUDA_Error("malloc vec_d failed");
     cudaMalloc(&mat_d, n * n * sizeof(double));
     Check_CUDA_Error("malloc mat_d failed");
-    cudaMalloc(&temp_mat_d, n * n * sizeof(double));
+    cudaMalloc(&gpu_result, n * sizeof(double));
     Check_CUDA_Error("malloc temp_mat failed");
     cudaMemcpyAsync(vec_d, vec, n * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(mat_d, mat, n * n * sizeof(double), cudaMemcpyHostToDevice);
 
+    dim3 grid(n/BLOCK_SIZE, n/BLOCK_SIZE);
+    dim3 block(BLOCK_SIZE, BLOCK_SIZE);
+    cudaDeviceSynchronize();
 
+    tick = omp_get_wtime();
+    gpu_mat_vec_mul<<<grid, block>>> (mat_d, vec_d, gpu_result, n);
     // fetch mul result
     // currently sum_d is out anwser
-    cudaMemcpy(vec_mul, sum_d, n * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(vec_mul, gpu_result, n * sizeof(double), cudaMemcpyDeviceToHost);
     Check_CUDA_Error("copy result back failed");
     cudaDeviceSynchronize();
 
