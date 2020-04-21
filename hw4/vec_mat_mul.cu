@@ -39,7 +39,7 @@ void openmp_vec_mat_mul(double *res, const double *mat, const double *vec, long 
     }
 }
 
-#define BLOCK_SIZE 64
+#define TILE_LEN 32 // block size be 32*32=1024
 
 __device__ double atomicAdd2(double* address, double val)
 {
@@ -61,7 +61,7 @@ __device__ double atomicAdd2(double* address, double val)
 
 __global__ void gpu_mat_vec_mul(const double* mat, const double* vec, double* result, int n){
 
-    __shared__ double smem[BLOCK_SIZE][BLOCK_SIZE];
+    __shared__ double smem[TILE_LEN][TILE_LEN];
 
     long idx = threadIdx.x + blockIdx.x*blockDim.x;
     long idy = threadIdx.y + blockIdx.y*blockDim.y;
@@ -158,8 +158,8 @@ int main() {
     cudaMemcpyAsync(gpu_result, vec_mul, n * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(mat_d, mat, n * n * sizeof(double), cudaMemcpyHostToDevice);
 
-    dim3 grid(n/BLOCK_SIZE, n/BLOCK_SIZE);
-    dim3 block(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 grid(n/TILE_LEN, n/TILE_LEN);
+    dim3 block(TILE_LEN, TILE_LEN);
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
