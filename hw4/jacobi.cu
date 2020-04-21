@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
         if (init_res/cur_res > 1e+6) {
             break;
         }
-        printf("%f\n", cur_res);
+        printf("%lf\n", cur_res);
         gpu_iter++;
     }
 //
