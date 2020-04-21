@@ -3,4 +3,4 @@ project(hw4)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(hw4 main.cpp inner_product.cu vec_mat_mul.cu jacobi.cu)
+add_executable(hw4 main.cu inner_product.cu vec_mat_mul.cu jacobi.cu)
