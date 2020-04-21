@@ -104,22 +104,6 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
         __syncthreads();
     }
 
-    if (threadIdx.y == 0) {
-        double acc = 0;
-        for (int k = 0; k < TILE_LEN; k++) {
-            acc += smem[threadIdx.x][k];
-        }
-        smem[threadIdx.x][0] = acc;
-        __syncthreads();
-    }
-
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        double acc = 0;
-        for (int k = 0; k < TILE_LEN; k++) {
-            acc += smem[k][0];
-        }
-        atomicAdd2(&gpu_residual, acc);
-    }
 }
 
 __global__ void gpu_res_calc(const double* u, int n) {
@@ -212,7 +196,7 @@ int main(int argc, char** argv) {
     double cur_res = 0;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
-        cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
+        cudaMemsetAsync(gpu_residual, 0, sizeof(double));
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
