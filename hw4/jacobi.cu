@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
-        gpu_residual<<<grid, block>>>(u_d, N);
+        gpu_res<<<grid, block>>>(u_d, N);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cur_res = std::sqrt(cur_res);
         cudaDeviceSynchronize();
