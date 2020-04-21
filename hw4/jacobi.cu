@@ -168,6 +168,7 @@ int main(int argc, char** argv) {
     long gpu_iter = 0;
     double init_res = 0;
     cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
+    Check_CUDA_Error("init failed");
     cudaDeviceSynchronize();
     gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
