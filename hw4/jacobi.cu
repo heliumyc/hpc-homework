@@ -163,6 +163,7 @@ int main(int argc, char** argv) {
     // gpu
 
     for (int i = 0; i < SIZE*SIZE; ++i) {
+        printf("test stop");
         u[i] = 0;
         v[i] = 0;
     }
