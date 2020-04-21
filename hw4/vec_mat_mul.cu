@@ -39,7 +39,7 @@ void openmp_vec_mat_mul(double *res, const double *mat, const double *vec, long 
     }
 }
 
-#define TILE_LEN 32 // block size be 32*32=1024
+#define TILE_LEN 8 // block size be 32*32=1024
 
 __device__ double atomicAdd2(double* address, double val)
 {
@@ -80,30 +80,6 @@ __global__ void gpu_mat_vec_mul(const double* mat, const double* vec, double* re
 
     if(threadIdx.y == 0){
         atomicAdd2(result + idx, smem[threadIdx.x][threadIdx.y]);
-    }
-}
-
-__global__ void gpu_mat_vec_mul_2(const double *va, const double *vb, double *ret, long N) {
-    extern __shared__ double shared_cache[];
-    long idx = threadIdx.x + blockIdx.x * blockDim.x;
-    long idy = threadIdx.y + blockIdx.y * blockDim.y;
-
-    if (idx < N && idy < N) {
-        long tindex = idx * N + idy;
-        shared_cache[threadIdx.x * blockDim.y + threadIdx.y] = va[tindex] * vb[idy];
-        __syncthreads();
-    }
-
-    for (unsigned int s = blockDim.y / 2; s > 0; s >>= 1) {
-        if (threadIdx.y < s) {
-            shared_cache[threadIdx.x * blockDim.y + threadIdx.y] += shared_cache[threadIdx.x * blockDim.y +
-                                                                                 threadIdx.y + s];
-        }
-        __syncthreads();
-    }
-
-    if (threadIdx.y == 0) {
-        atomicAdd2(ret + idx, shared_cache[threadIdx.x * blockDim.y + threadIdx.y]);
     }
 }
 
@@ -187,7 +163,7 @@ int main() {
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
-    gpu_mat_vec_mul_2<<< grid,block >>>(mat_d, vec_d, gpu_result, n);
+    gpu_mat_vec_mul<<< grid,block >>>(mat_d, vec_d, gpu_result, n);
     cudaDeviceSynchronize();
     Check_CUDA_Error("mul failed");
     // fetch mul result
