@@ -163,6 +163,8 @@ int main(int argc, char** argv) {
 //    // allocate
     std::fill(u, u+MAT_SIZE, 0);
     std::fill(v, v+MAT_SIZE, 0);
+    printf("test stop");
+    printf("%lf", u[0]);
     double* u_d;
     double* v_d;
     cudaMalloc(&u_d, MAT_SIZE * sizeof(double));
