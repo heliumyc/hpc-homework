@@ -63,7 +63,11 @@ long jacobi_cpu(double* u, double* v) {
     return k;
 }
 
-#define TILE_LEN 16 // block size be 8*8=64
+inline double sqr(double x) {
+    return x*x;
+}
+
+#define TILE_LEN 8 // block size be 8*8=64
 
 __device__ double gpu_residual;
 
@@ -85,17 +89,21 @@ __device__ double atomicAdd2(double* address, double val)
     return __longlong_as_double(old);
 }
 
-__global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
+__global__ void gpu_jacobi(const double* u, double* v, int n) {
     __shared__ double smem[TILE_LEN][TILE_LEN];
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
 
     smem[threadIdx.x][threadIdx.y] = 0;
     int size = n+2;
+
+    double _h = 1./(double) (N+1);
+    double _hsqr = _h*_h;
+    double _hsqrinverse = 1/_hsqr;
+
     if(i >= 1 && j >= 1 && i <= n && j <= n){
-        double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
-        diff = diff*diff;
-        smem[threadIdx.x][threadIdx.y] = diff;
+        smem[threadIdx.x][threadIdx.y] = sqr((-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1);
+        v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
         __syncthreads();
     }
 
@@ -114,15 +122,6 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
             acc += smem[k][0];
         }
         atomicAdd2(&gpu_residual, acc);
-    }
-}
-
-__global__ void gpu_jacobi(double* u, double* v, int n, double hsqr) {
-    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
-    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
-    int size = n+2;
-    if(i >= 1 && j >= 1 && i <= n && j <= n){
-        v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
     }
 }
 
@@ -181,10 +180,9 @@ int main(int argc, char** argv) {
     while (gpu_iter <= maxIter) {
         cur_res = 0;
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
-        gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
+        gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
-        gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cur_res = std::sqrt(cur_res);
         cudaDeviceSynchronize();
