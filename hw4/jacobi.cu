@@ -90,7 +90,7 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     if (threadIdx.y == 0) {
         double acc = 0;
         for (int k = 0; k < TILE_LEN; k++) {
-            acc += smem[threadIdx.x][threadIdx.y];
+            acc += smem[threadIdx.x][k];
         }
         smem[threadIdx.x][0] = acc;
         __syncthreads();
