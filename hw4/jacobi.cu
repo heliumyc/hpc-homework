@@ -165,6 +165,7 @@ int main(int argc, char** argv) {
     double* vv;
     cudaMallocHost((void**)&uu, MAT_SIZE * sizeof(double));
     cudaMallocHost((void**)&vv, MAT_SIZE * sizeof(double));
+    Check_CUDA_Error("alloc host failed");
     for (int i = 0; i < MAT_SIZE; ++i) {
         uu[i] = 0;
         vv[i] = 0;
