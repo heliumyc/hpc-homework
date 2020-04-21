@@ -127,6 +127,11 @@ int main(int argc, char** argv) {
         u[i] = 0;
         v[i] = 0;
     }
+    free(u);
+    free(v);
+    double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
+    printf("alloc1 host done");
+    double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
 
     // gpu
 
