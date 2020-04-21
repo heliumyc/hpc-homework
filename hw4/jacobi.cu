@@ -194,7 +194,6 @@ int main(int argc, char** argv) {
     tick = omp_get_wtime();
 
     double cur_res = 0;
-    maxIter = 500;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
