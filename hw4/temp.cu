@@ -3,7 +3,6 @@
 #include <omp.h>
 #include <iostream>
 #include <cmath>
-#include "utils.h"
 #define block_size 1024
 __device__ double production;
 
