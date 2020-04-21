@@ -1,6 +1,6 @@
 CFLAGS:=-O3  # -g = debug, -O2 for optimized code CPPFLAGS for g++
 CC:=nvcc
-OMP:=-fopenmp
+OMP:=-Xcompiler -fopenmp
 STD:=-std=c++11
 
 .PHONY: all
