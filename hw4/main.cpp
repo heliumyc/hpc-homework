@@ -5,7 +5,7 @@
 
 long N = 100;
 long SIZE = N+2; // always N+2
-long maxIter = INT32_MAX;
+long maxIter = 30000000;
 double h, hSqr, hSqrInverse;
 
 inline double sqr(double x) {
@@ -40,7 +40,9 @@ long jacobi_cpu(double* u, double* v) {
                 v[i*SIZE+j] = (hSqr+u[(i-1)*SIZE+j]+u[i*SIZE+j-1]+u[(i+1)*SIZE+j]+u[i*SIZE+j+1])/4;
             }
         }
-        std::swap(u, v);
+        double* temp = u;
+        u = v;
+        v = temp;
         curResidual = calcResidual(u);
 
         if (initResidual/curResidual > 1e+6) {
@@ -104,8 +106,8 @@ int main(int argc, char** argv) {
     hSqr = h*h;
     hSqrInverse = 1/hSqr;
 
-    auto* u = new double[SIZE*SIZE];
-    auto* v = new double[SIZE*SIZE];
+    double* u = (double*) malloc(SIZE*SIZE*sizeof(double));
+    double* v = (double*) malloc(SIZE*SIZE*sizeof(double));
     // initialization
     for (int i = 0; i < SIZE*SIZE; ++i) {
         u[i] = 0;
