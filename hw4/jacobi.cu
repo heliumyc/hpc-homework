@@ -8,7 +8,9 @@ int SIZE = N+2; // always N+2
 int MAT_SIZE = SIZE*SIZE;
 //long maxIter = INT32_MAX;
 long maxIter = 30000;
-double h, hSqr, hSqrInverse;
+double h = 1./(double) (N+1);;
+double hSqr = h*h;
+double hSqrInverse = 1/hSqr;
 
 inline double sqr(double x) {
     return x*x;
@@ -141,10 +143,6 @@ int main(int argc, char** argv) {
     printf("Jacobi 2D\n");
     printf("=====================\n");
 
-    h = 1./(double) (N+1);
-    hSqr = h*h;
-    hSqrInverse = 1/hSqr;
-
     double* u = (double*) malloc(SIZE*SIZE*sizeof(double));
     double* v = (double*) malloc(SIZE*SIZE*sizeof(double));
     // initialization
@@ -201,6 +199,7 @@ int main(int argc, char** argv) {
         cur_res = 0;
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
+        cudaDeviceSynchronize();
 //        std::swap(u_d, v_d);
         double* temp = u_d;
         u_d = v_d;
