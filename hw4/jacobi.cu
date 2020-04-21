@@ -144,8 +144,6 @@ int main(int argc, char** argv) {
 
     double* u = (double*) malloc(SIZE*SIZE*sizeof(double));
     double* v = (double*) malloc(SIZE*SIZE*sizeof(double));
-    cudaMallocHost((void**)&u, SIZE*SIZE * sizeof(double));
-    cudaMallocHost((void**)&v, SIZE*SIZE * sizeof(double));
     // initialization
     for (int i = 0; i < SIZE*SIZE; ++i) {
         u[i] = 0;
