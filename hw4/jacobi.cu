@@ -4,7 +4,7 @@
 #include <omp.h>
 #include <algorithm>
 
-int N = 200;
+int N = 150;
 int SIZE = N+2; // always N+2
 int MAT_SIZE = SIZE*SIZE;
 long maxIter = INT32_MAX;
@@ -63,7 +63,7 @@ long jacobi_cpu(double* u, double* v) {
     return k;
 }
 
-#define TILE_LEN 32 // block size be 8*8=64
+#define TILE_LEN 16 // block size be 8*8=64
 
 __device__ double gpu_residual;
 
@@ -98,9 +98,9 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
     double _hsqrinverse = 1/_hsqr;
 
     if(i >= 1 && j >= 1 && i <= n && j <= n){
-        double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
-        smem[threadIdx.x][threadIdx.y] = diff*diff;
         v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+        double diff = (-v[(i-1)*size+j]-v[i*size+j-1]+4*v[i*size+j]-v[(i+1)*size+j]-v[i*size+j+1]) * _hsqrinverse - 1;
+        smem[threadIdx.x][threadIdx.y] = diff*diff;
         __syncthreads();
     }
 
