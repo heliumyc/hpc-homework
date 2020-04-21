@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     printf("%f\n", init_res);
 
-    maxIter = 10;
+    maxIter = 30000;
     double cur_res = 0;
     while (gpu_iter < maxIter) {
         cur_res = 0;
@@ -210,7 +210,6 @@ int main(int argc, char** argv) {
         if (init_res/cur_res > 1e+6) {
             break;
         }
-        printf("%lf\n", cur_res);
         gpu_iter++;
     }
     printf("%lf\n", cur_res);
