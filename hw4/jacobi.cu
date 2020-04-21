@@ -7,7 +7,6 @@
 int N = 50;
 int SIZE = N+2; // always N+2
 int MAT_SIZE = SIZE*SIZE;
-//long maxIter = INT32_MAX;
 long maxIter = 30000;
 double h = 1./(double) (N+1);
 double hSqr = h*h;
@@ -58,6 +57,7 @@ long jacobi_cpu(double* u, double* v) {
         v = temp;
 //        std::swap(*u, *v);
 
+        curResidual = calcResidual(u);
         if (initResidual/curResidual > 1e+6) {
             printf("%lf\n", curResidual);
             break;
