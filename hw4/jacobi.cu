@@ -86,18 +86,18 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
         diff = diff*diff;
         atomicAdd2(&gpu_residual, 1);
 //        smem[threadIdx.x][threadIdx.y] = diff;
-        __syncthreads();
+//        __syncthreads();
     }
 
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        double acc = 0;
-        for (int k = 0; k < TILE_LEN; k++) {
-            for (int p = 0; p < TILE_LEN; p++) {
-                acc += smem[p][k];
-            }
-        }
-        atomicAdd2(&gpu_residual, acc);
-    }
+//    if (threadIdx.x == 0 && threadIdx.y == 0) {
+//        double acc = 0;
+//        for (int k = 0; k < TILE_LEN; k++) {
+//            for (int p = 0; p < TILE_LEN; p++) {
+//                acc += smem[p][k];
+//            }
+//        }
+//        atomicAdd2(&gpu_residual, acc);
+//    }
 
 //    if (threadIdx.y == 0) {
 //        double acc = 0;
@@ -169,11 +169,15 @@ int main(int argc, char** argv) {
     tick = omp_get_wtime();
     long gpu_iter = 0;
     double init_res = 0;
+
     cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
+    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+    printf("test %f", init_res);
     Check_CUDA_Error("init failed");
     cudaDeviceSynchronize();
     gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+
     cudaDeviceSynchronize();
     printf("%f", init_res);
     double cur_res = 0;
