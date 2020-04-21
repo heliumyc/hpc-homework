@@ -87,6 +87,20 @@ __device__ double atomicAdd2(double* address, double val)
 }
 
 __global__ void gpu_jacobi(const double* u, double* v, int n) {
+    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
+    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
+
+    int size = n+2;
+
+    double _h = 1./(double) (n+1);
+    double _hsqr = _h*_h;
+
+    if(i >= 1 && j >= 1 && i <= n && j <= n){
+        v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+    }
+}
+
+__global__ void gpu_res(const double* u, int n) {
     __shared__ double smem[TILE_LEN][TILE_LEN];
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
@@ -99,8 +113,7 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
     double _hsqrinverse = 1/_hsqr;
 
     if(i >= 1 && j >= 1 && i <= n && j <= n){
-        v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
-        double diff = (-v[(i-1)*size+j]-v[i*size+j-1]+4*v[i*size+j]-v[(i+1)*size+j]-v[i*size+j+1]) * _hsqrinverse - 1;
+        double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
         smem[threadIdx.x][threadIdx.y] = diff*diff;
         __syncthreads();
     }
@@ -124,14 +137,13 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
 }
 
 int main(int argc, char** argv) {
-    if (argc == 4) {
+    if (argc == 3) {
         N = (long) strtol(argv[1], nullptr, 10);
         SIZE = N+2;
         maxIter = (long) strtol(argv[2], nullptr, 10);
         if (maxIter == -1) {
             maxIter = INT32_MAX;
         }
-        threadNum = (int) strtol(argv[3], nullptr, 10);
     } else {
         printf("usage: ./program N iteration(-1 nonstop) thread_number\n");
         exit(0);
@@ -190,6 +202,7 @@ int main(int argc, char** argv) {
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
+        gpu_residual<<<grid, block>>>(u_d, N);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cur_res = std::sqrt(cur_res);
         cudaDeviceSynchronize();
