@@ -106,16 +106,16 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
 
     if (threadIdx.y == 0) {
         double acc = 0;
-        for (int i = 0; i < TILE_LEN; i++) {
-            acc += smem[threadIdx.x][i];
+        for (int k = 0; k < TILE_LEN; k++) {
+            acc += smem[threadIdx.x][k];
         }
         __syncthreads();
     }
 
     if (threadIdx.x == 0 && threadIdx.y == 0) {
         double acc = 0;
-        for (int i = 0; i < TILE_LEN; i++) {
-            acc += smem[i][0];
+        for (int k = 0; k < TILE_LEN; k++) {
+            acc += smem[k][0];
         }
         atomicAdd2(&gpu_residual, acc);
     }
@@ -168,6 +168,7 @@ int main(int argc, char** argv) {
     tick = omp_get_wtime();
 
     double cur_res = 0;
+    maxIter = 100;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
         cudaMemsetAsync(&gpu_residual, 0, sizeof(double));
@@ -182,6 +183,7 @@ int main(int argc, char** argv) {
         }
         gpu_iter++;
     }
+    printf("%lf", cur_res);
     tok = omp_get_wtime();
     printf("GPU\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
