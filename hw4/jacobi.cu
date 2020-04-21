@@ -165,9 +165,9 @@ int main(int argc, char** argv) {
     double* uu = (double*) malloc(SIZE*SIZE*sizeof(double));;
     double* vv = (double*) malloc(SIZE*SIZE*sizeof(double));;
     Check_CUDA_Error("alloc host failed");
-    for (int i = 0; i < SIZE*SIZE; ++i) {
-        uu[i] = 0;
-        vv[i] = 0;
+    for (int k = 0; k < SIZE*SIZE; ++k) {
+        uu[k] = 0;
+        vv[k] = 0;
     }
     printf("alloc host done");
     double* u_d;
