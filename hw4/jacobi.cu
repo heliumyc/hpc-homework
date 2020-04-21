@@ -4,7 +4,7 @@
 #include <omp.h>
 #include <algorithm>
 
-int N = 200;
+int N = 100;
 int SIZE = N+2; // always N+2
 int MAT_SIZE = SIZE*SIZE;
 long maxIter = INT32_MAX;
