@@ -134,11 +134,15 @@ int main() {
     cudaMalloc(&b_d, n*sizeof(double));
     cudaMemcpyAsync(a_d, a, n*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(b_d, b, n*sizeof(double), cudaMemcpyHostToDevice);
+    /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /// this is essential!!!!!!!!! must move to memory of GPU, else it will be in main mem and ultra SLOW
+    /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     cudaMemcpyToSymbol(global_sum, &cuda_res, sizeof(double));
+    cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
     gpu_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, n);
-    cudaMemcpyFromSymbol(&cuda_res, global_sum, 1*sizeof(double));
+    cudaMemcpyFromSymbol(&cuda_res, global_sum, sizeof(double));
     cudaDeviceSynchronize();
 
     time = omp_get_wtime() - tick;
