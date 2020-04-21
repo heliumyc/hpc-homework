@@ -28,27 +28,35 @@ void openmp_inner_product(double *res, const double *a, const double *b, long n)
 
 #define BLOCK_SIZE 1024
 
-// gpu reduce
-__global__
-void gpu_map_vec_inner_product(const double*a, const double *b, double *c, long n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < n) {
-        c[idx] = a[idx] * b[idx];
-    }
+__device__ double global_sum;
+
+__device__ double atomicAdd2(double* address, double val)
+{
+    auto* address_as_ull =
+            (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+                        __double_as_longlong(val +
+                                             __longlong_as_double(assumed)));
+
+        // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+    } while (assumed != old);
+
+    return __longlong_as_double(old);
 }
 
 // gpu reduce
-__global__ void gpu_reduce_inner_product(double* sum, const double* a, long N){
+__global__ void gpu_inner_product(const double *a, const double *b, long N) {
     __shared__ double smem[BLOCK_SIZE];
-    int idx = (blockIdx.x) * blockDim.x + threadIdx.x;
-
-    // each thread reads data from global into shared memory
-    if (idx < N) smem[threadIdx.x] = a[idx];
+    long idx = blockIdx.x*blockDim.x + threadIdx.x; // idx on one dim vector
+    if (idx < N) smem[threadIdx.x] = a[idx] * b[idx];
     else smem[threadIdx.x] = 0;
+
     __syncthreads();
 
-    // x >>= 1 means "set x to itself shifted by one bit to the right", i.e., a divison by 2
-    // write to memory with threadIdx rather than ``index''
     for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
         if (threadIdx.x < s) {
             smem[threadIdx.x] += smem[threadIdx.x + s];
@@ -56,8 +64,7 @@ __global__ void gpu_reduce_inner_product(double* sum, const double* a, long N){
         __syncthreads();
     }
 
-    // write to global memory
-    if (threadIdx.x == 0) sum[blockIdx.x] = smem[threadIdx.x];
+    if (threadIdx.x == 0) atomicAdd2(global_sum, shared_cache[0]);
 }
 
 int main() {
@@ -125,29 +132,10 @@ int main() {
     cudaMemcpyAsync(a_d, a, n*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(b_d, b, n*sizeof(double), cudaMemcpyHostToDevice);
 
-    double* temp_d;
-    cudaMalloc(&temp_d, n*sizeof(double));
-    double* extra_d;
-    long N_work = 1;
-    for (long i = (n+BLOCK_SIZE-1)/(BLOCK_SIZE); i > 1; i = (i+BLOCK_SIZE-1)/(BLOCK_SIZE)) N_work += i;
-    cudaMalloc(&extra_d, N_work*sizeof(double)); // extra memory buffer for reduction across thread-blocks
-    cudaDeviceSynchronize();
-
     tick = omp_get_wtime();
     double cuda_res;
-
-    gpu_map_vec_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, temp_d, n);
-
-    double* sum_d = extra_d;
-    long Nb = (n+BLOCK_SIZE-1)/(BLOCK_SIZE);
-    gpu_reduce_inner_product << < Nb, BLOCK_SIZE >> > (sum_d, temp_d, n);
-    while (Nb > 1) {
-        long lastN = Nb;
-        Nb = (Nb+BLOCK_SIZE-1)/(BLOCK_SIZE);
-        gpu_reduce_inner_product << < Nb, BLOCK_SIZE >> > (sum_d + lastN, sum_d, lastN);
-        sum_d += lastN;
-    }
-    cudaMemcpyAsync(&cuda_res, sum_d, 1*sizeof(double), cudaMemcpyDeviceToHost);
+    gpu_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, n);
+    cudaMemcpyAsync(&cuda_res, global_sum, 1*sizeof(double), cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
 
     time = omp_get_wtime() - tick;

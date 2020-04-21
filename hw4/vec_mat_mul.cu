@@ -41,42 +41,36 @@ void openmp_vec_mat_mul(double *res, const double *mat, const double *vec, long 
 
 #define BLOCK_SIZE 32
 
-__global__
-void gpu_map_vec_mat_mul(const double *mat, const double *vec, double *temp_mat, long n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int idy = blockIdx.y * blockDim.y + threadIdx.y;
-    if (idx < n) {
-        temp_mat[idy + idx * n] = mat[idy + idx * n] * vec[idy];
-    }
-}
+__global__ void MatrixMulKernel(double* mat, double* vec, double* result, int n){
 
-// gpu reduce
-__global__ void gpu_reduce_vec_mat_mul(double *sum, const double *mat, long n) {
-    __shared__ double smem[BLOCK_SIZE][BLOCK_SIZE];
-    int idx = (blockIdx.x) * blockDim.x + threadIdx.x;
-    int idy = (blockIdx.y) * blockDim.y + threadIdx.y;
+    __shared__ double block[BLOCK_SIZE][BLOCK_SIZE];  // Shared memory
+    __shared__ double slice[BLOCK_SIZE];
 
-    // each thread reads data from global into shared memory
-    if (idx < n && idy < n) smem[threadIdx.x][threadIdx.y] = mat[idy + idx * n];
-    else smem[threadIdx.x][threadIdx.y] = 0;
-    __syncthreads();
+    int bx = blockIdx.x;
+    int by = blockIdx.y; // ID thread
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
 
+    int row = by * BLOCK_SIZE + ty;
+    int col = bx * BLOCK_SIZE + tx;
 
-    // x >>= 1 means "set x to itself shifted by one bit to the right", i.e., a divison by 2
-    // write to memory with threadIdx rather than ``index''
-    for (unsigned int s = blockDim.y / 2; s > 0; s >>= 1) {
-        if (threadIdx.x < s) {
-            smem[threadIdx.x][threadIdx.y] += smem[threadIdx.x][threadIdx.y + s];
-        }
+    double sum = 0;
+
+    // Loop over the mat and Nd tiles required to compute the Pd element
+    for (int i = 0; i < n / BLOCK_SIZE; ++i) {
+        // Collaborative loading of mat and Nd tiles into shared memory
+        Mds[ty][tx] = mat[row * n + (i * BLOCK_SIZE + tx)]; // mat(row, i*tile+tx)
+        Nds[ty][tx] = vec[col + (i * BLOCK_SIZE + ty) * n]; // vec(col + (i*tile+ty)*n)
+
+        __syncthreads();
+
+        for (int k = 0; k < BLOCK_SIZE; ++k)
+            sum +=  Mds[ty][k] * Nds[k][tx];
+
         __syncthreads();
     }
 
-    // write to global memory
-    if (threadIdx.y == 0) {
-        int xx = blockIdx.x * blockDim.x + threadIdx.x;
-        // new buffer index (blockX*blockX.num + threadOffset,  blockY)
-        sum[blockIdx.y * n + xx] = smem[threadIdx.x][threadIdx.y];
-    }
+    result[row * n + col] = sum;
 }
 
 void Check_CUDA_Error(const char *message) {
@@ -90,10 +84,6 @@ void Check_CUDA_Error(const char *message) {
 int main() {
 
     long n = 1 << 12;
-//    double* vec = (double *) malloc(n * sizeof(double));
-//    double* mat = (double *) malloc(n*n * sizeof(double));
-//    double* vec_ref = (double *) malloc(n * sizeof(double));
-//    double* vec_mul = (double *) malloc(n * sizeof(double));
     double *vec;
     double *mat;
     double *vec_ref;
@@ -128,6 +118,8 @@ int main() {
     printf("CPU Bandwidth = %f GB/s\n", (n * n + n) * sizeof(double) / time / 1e9);
     printf("Error = %f\n", compare_vec(vec_ref, vec_ref, n));
 
+    printf("------------\n");
+
     // openmp calculation
     tick = omp_get_wtime();
     openmp_vec_mat_mul(vec_mul, mat, vec, n);
@@ -154,33 +146,6 @@ int main() {
     cudaMemcpyAsync(vec_d, vec, n * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(mat_d, mat, n * n * sizeof(double), cudaMemcpyHostToDevice);
 
-    // alloc extra space 
-    double *extra_d;
-    long N_work = 1;
-    for (long i = (n + BLOCK_SIZE - 1) / (BLOCK_SIZE); i > 1; i = (i + BLOCK_SIZE - 1) / (BLOCK_SIZE)) N_work += i;
-    cudaMalloc(&extra_d, (N_work) * n * sizeof(double)); // extra memory buffer for reduction across thread-blocks
-    cudaDeviceSynchronize();
-
-
-    tick = omp_get_wtime();
-
-    dim3 block_dim(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 grid_dim(n / BLOCK_SIZE, n / BLOCK_SIZE);
-    // map
-    gpu_map_vec_mat_mul <<< grid_dim, block_dim >>> (mat_d, vec_d, temp_mat_d, n);
-    cudaDeviceSynchronize();
-
-    // reduce
-    double *sum_d = extra_d; // for reduction intermediate number
-    long Nb = (n + BLOCK_SIZE - 1) / (BLOCK_SIZE);
-    gpu_reduce_vec_mat_mul <<< grid_dim, block_dim >>> (sum_d, temp_mat_d, n);
-    while (Nb > 1) {
-        long next_buffer_offset = Nb * n;
-        Nb = (Nb + BLOCK_SIZE - 1) / (BLOCK_SIZE);
-        dim3 cur_grid(n / BLOCK_SIZE, Nb);
-        gpu_reduce_vec_mat_mul << < cur_grid, block_dim >> > (sum_d + next_buffer_offset, sum_d, Nb);
-        sum_d += next_buffer_offset; // currently sum_d point to reduction result
-    }
 
     // fetch mul result
     // currently sum_d is out anwser
