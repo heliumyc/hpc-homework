@@ -163,7 +163,7 @@ int main() {
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
-    gpu_mat_vec_mul <<< grid, block >>> (mat_d, vec_d, gpu_result, n);
+    gpu_mat_vec_mul<<< grid,block >>>(mat_d, vec_d, gpu_result, n);
     Check_CUDA_Error("mul failed");
     // fetch mul result
     // currently sum_d is out anwser
