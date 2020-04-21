@@ -50,7 +50,10 @@ long jacobi_cpu(double* u, double* v) {
                 v[i*SIZE+j] = (hSqr+u[(i-1)*SIZE+j]+u[i*SIZE+j-1]+u[(i+1)*SIZE+j]+u[i*SIZE+j+1])/4;
             }
         }
-        std::swap(u, v);
+//        std::swap(u, v);
+        double* temp = u;
+        u = v;
+        v = temp;
         curResidual = calcResidual(u);
 
         if (initResidual/curResidual > 1e+6) {
@@ -201,7 +204,10 @@ int main(int argc, char** argv) {
     double cur_res = 0;
     while (gpu_iter < maxIter) {
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
-        std::swap(u_d, v_d);
+//        std::swap(u_d, v_d);
+        double* temp = u;
+        u = v;
+        v = temp;
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cudaDeviceSynchronize();
