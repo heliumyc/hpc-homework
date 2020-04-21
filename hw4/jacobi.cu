@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     printf("%f\n", init_res);
 
-    maxIter = 3000;
+    maxIter = 10;
     double cur_res = 0;
     while (gpu_iter < maxIter) {
         cur_res = 0;
@@ -201,16 +201,16 @@ int main(int argc, char** argv) {
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
         cudaDeviceSynchronize();
 //        std::swap(u_d, v_d);
-        double* temp = u_d;
-        u_d = v_d;
-        v_d = temp;
-        gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
+//        double* temp = u_d;
+//        u_d = v_d;
+//        v_d = temp;
+        gpu_residual_calc<<<grid, block>>>(v_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cudaDeviceSynchronize();
         if (init_res/cur_res > 1e+6) {
             break;
         }
-//        printf("%lf\n", cur_res);
+        printf("%lf\n", cur_res);
         gpu_iter++;
     }
     printf("%lf\n", cur_res);
