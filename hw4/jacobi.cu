@@ -192,7 +192,8 @@ int main(int argc, char** argv) {
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
     cudaDeviceSynchronize();
     printf("%f\n", init_res);
-
+    
+    tok = omp_get_wtime();
     maxIter = 3000;
     double cur_res = 0;
     while (gpu_iter < maxIter) {
@@ -214,10 +215,10 @@ int main(int argc, char** argv) {
     }
     printf("%lf\n", cur_res);
 //
-//    tok = omp_get_wtime();
-//    printf("GPU\n");
-//    printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
-//    printf("Residual: %lf\n", cur_res);
+
+    printf("GPU\n");
+    printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
+    printf("Residual: %lf\n", cur_res);
 
     free(u);
     free(v);
