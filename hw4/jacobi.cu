@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
     gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
     cudaDeviceSynchronize();
-    printf("%f", init_res);
+    printf("%f\n", init_res);
 
     double cur_res = 0;
     maxIter = 10;
@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
         if (init_res/cur_res > 1e+6) {
             break;
         }
-        printf("%f", cur_res);
+        printf("%f\n", cur_res);
         gpu_iter++;
     }
 //
