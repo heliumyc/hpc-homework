@@ -5,7 +5,7 @@ STD:=-std=c++11
 
 .PHONY: all
 
-all:  mmult ompbugs jacobi gs;
+all:  mulvec innerproduct jacobi;
 
 
 mulvec:
@@ -18,4 +18,4 @@ jacobi:
 	$(CC) $(CFLAGS) $(STD) $(OMP) -o jacobi jacobi.cu
 
 clean:
-	rm -f vec_mat_mul inner_product jacobi *.o;
+	rm -f vec_mat_mul inner_product jacobi;
