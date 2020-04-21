@@ -104,6 +104,21 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
         __syncthreads();
     }
 
+    if (threadIdx.y == 0) {
+        double acc = 0;
+        for (int i = 0; i < TILE_LEN; i++) {
+            acc += smem[threadIdx.x][i];
+        }
+        __syncthreads();
+    }
+
+    if (threadIdx.x == 0 && threadIdx.y == 0) {
+        double acc = 0;
+        for (int i = 0; i < TILE_LEN; i++) {
+            acc += smem[i][0];
+        }
+        atomicAdd2(&gpu_residual, acc);
+    }
 }
 
 int main(int argc, char** argv) {
