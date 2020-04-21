@@ -96,7 +96,7 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
         diff = diff*diff;
         atomicAdd2(&gpu_residual, diff);
 //        smem[threadIdx.x][threadIdx.y] = diff;
-//        __syncthreads();
+        __syncthreads();
     }
 
 //    if (threadIdx.x == 0 && threadIdx.y == 0) {
