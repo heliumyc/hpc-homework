@@ -43,7 +43,7 @@ dimension: 1<<13
 # Usage of Jacobi
 
 ```
-./program {N} {max iteration}
+./jacobi {N} {max iteration}
 ```
 
 if max iteration is -1 , then it will not stop until it converges
