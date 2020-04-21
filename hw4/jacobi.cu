@@ -88,7 +88,7 @@ __device__ double atomicAdd2(double* address, double val)
 }
 
 __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
-//    __shared__ double smem[TILE_LEN][TILE_LEN];
+    __shared__ double smem[TILE_LEN][TILE_LEN];
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
 
@@ -96,20 +96,19 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     if(i >= 1 && j >= 1 && i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
         diff = diff*diff;
-        atomicAdd2(&gpu_residual, diff);
-//        smem[threadIdx.x][threadIdx.y] = diff;
+        smem[threadIdx.x][threadIdx.y] = diff;
         __syncthreads();
     }
 
-//    if (threadIdx.x == 0 && threadIdx.y == 0) {
-//        double acc = 0;
-//        for (int k = 0; k < TILE_LEN; k++) {
-//            for (int p = 0; p < TILE_LEN; p++) {
-//                acc += smem[p][k];
-//            }
-//        }
-//        atomicAdd2(&gpu_residual, acc);
-//    }
+    if (threadIdx.x == 0 && threadIdx.y == 0) {
+        double acc = 0;
+        for (int k = 0; k < TILE_LEN; k++) {
+            for (int p = 0; p < TILE_LEN; p++) {
+                acc += smem[p][k];
+            }
+        }
+        atomicAdd2(&gpu_residual, acc);
+    }
 
 //    if (threadIdx.y == 0) {
 //        double acc = 0;
