@@ -164,6 +164,7 @@ int main(int argc, char** argv) {
         std::swap(u_d, v_d);
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double));
+        printf("%f", cur_res);
         if (init_res/cur_res > 1e+6) {
             break;
         }
