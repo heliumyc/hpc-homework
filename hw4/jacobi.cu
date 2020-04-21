@@ -157,25 +157,24 @@ int main(int argc, char** argv) {
     tok = omp_get_wtime();
     printf("Openmp cpu\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
-    cudaFree(u);
-    cudaFree(v);
 
     printf("=====================\n");
 
     // gpu
-    cudaMallocHost((void**)&u, MAT_SIZE * sizeof(double));
-    cudaMallocHost((void**)&v, MAT_SIZE * sizeof(double));
-    Check_CUDA_Error("alloc host failed");
+    double* uu;
+    double* vv;
+    cudaMallocHost((void**)&uu, MAT_SIZE * sizeof(double));
+    cudaMallocHost((void**)&vv, MAT_SIZE * sizeof(double));
     for (int i = 0; i < MAT_SIZE; ++i) {
-        u[i] = 0;
-        v[i] = 0;
+        uu[i] = 0;
+        vv[i] = 0;
     }
     double* u_d;
     double* v_d;
     cudaMalloc(&u_d, MAT_SIZE * sizeof(double));
     cudaMalloc(&v_d, MAT_SIZE * sizeof(double));
-    cudaMemcpyAsync(u_d, u, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpyAsync(v_d, v, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(u_d, uu, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(v_d, vv, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaDeviceSynchronize();
     Check_CUDA_Error("alloc cuda failed");
 
@@ -215,8 +214,10 @@ int main(int argc, char** argv) {
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
     printf("Residual: %lf\n", cur_res);
 
+    cudaFree(uu);
     cudaFree(u);
     cudaFree(v);
+    cudaFree(vv);
     cudaFree(u_d);
     cudaFree(v_d);
 }
