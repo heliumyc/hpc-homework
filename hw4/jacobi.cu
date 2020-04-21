@@ -74,13 +74,14 @@ __device__ double atomicAdd2(double* address, double val)
     return __longlong_as_double(old);
 }
 
-__global__ void gpu_residual_calc(const double* u, const double* f, long n) {
+__global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
     __shared__ double smem[TILE_LEN][TILE_LEN];
     int i = (threadIdx.x + 1) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y + 1) + blockIdx.y*blockDim.y;
 
+    int size = n-2;
     if(i <= n && j <= n){
-        double diff = (-u[(i-1)*SIZE+j]-u[i*SIZE+j-1]+4*u[i*SIZE+j]-u[(i+1)*SIZE+j]-u[i*SIZE+j+1]) * hSqrInverse - 1;
+        double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
         diff = std::sqrt(diff);
         smem[threadIdx.x][threadIdx.y] = diff;
         __syncthreads();
@@ -104,10 +105,10 @@ __global__ void gpu_residual_calc(const double* u, const double* f, long n) {
     }
 }
 
-__global__ void gpu_jacobi(double* u, double* v) {
+__global__ void gpu_jacobi(double* u, double* v, double hsqr, int size) {
     int i = (threadIdx.x + 1) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y + 1) + blockIdx.y*blockDim.y;
-    v[i*SIZE+j] = (hSqr+u[(i-1)*SIZE+j]+u[i*SIZE+j-1]+u[(i+1)*SIZE+j]+u[i*SIZE+j+1])/4;
+    v[i*SIZE+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
 }
 
 
@@ -155,13 +156,13 @@ int main(int argc, char** argv) {
     tick = omp_get_wtime();
     long gpu_iter = 0;
     double init_res;
-    gpu_residual_calc<<<grid, block>>>(u_d);
+    gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
     cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double));
     double cur_res = 0;
     while (gpu_iter < maxIter) {
-        gpu_jacobi(u_d, v_d);
+        gpu_jacobi(u_d, v_d, N, hSqr);
         std::swap(u_d, v_d);
-        gpu_residual_calc<<<grid, block>>>(u_d);
+        gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double));
         if (init_res/cur_res > 1e+6) {
             break;
