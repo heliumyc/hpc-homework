@@ -15,6 +15,14 @@ inline double sqr(double x) {
     return x*x;
 }
 
+void Check_CUDA_Error(const char *message) {
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        fprintf(stderr, "ERROR: %s: %s\n", message, cudaGetErrorString(error));
+        exit(-1);
+    }
+}
+
 double calcResidual(const double* u) {
     // since f is always 1, just hardcoded 1 into formula
     // N is actually N+2 (0-N+1)
