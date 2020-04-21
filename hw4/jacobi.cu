@@ -127,7 +127,7 @@ __global__ void gpu_jacobi(double* u, double* v, int n) {
     double _h = 1./(double) (n+1);
     double _hsqr = _h*_h;
     if(i >= 1 && j >= 1 && i <= n && j <= n){
-        v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+        v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
     }
 }
 
