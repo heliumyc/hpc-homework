@@ -179,8 +179,8 @@ int main() {
     printf("stop 2");
     while (Nb > 1) {
         long next_buffer_offset = Nb * n;
+        dim3 cur_grid(n / BLOCK_SIZE, Nb / BLOCK_SIZE);
         Nb = (Nb + BLOCK_SIZE - 1) / (BLOCK_SIZE);
-        dim3 cur_grid(n / BLOCK_SIZE, block_dim);
         Check_CUDA_Error("some reduce failed");
         gpu_reduce_vec_mat_mul << < cur_grid, block_dim >> > (sum_d + next_buffer_offset, sum_d, Nb);
         sum_d += next_buffer_offset; // currently sum_d point to reduction result
