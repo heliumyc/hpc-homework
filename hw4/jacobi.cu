@@ -108,7 +108,7 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
 __global__ void gpu_jacobi(double* u, double* v, double hsqr, int size) {
     int i = (threadIdx.x + 1) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y + 1) + blockIdx.y*blockDim.y;
-    v[i*SIZE+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+    v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
 }
 
 
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
     cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double));
     double cur_res = 0;
     while (gpu_iter < maxIter) {
-        gpu_jacobi(u_d, v_d, N, hSqr);
+        gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
         std::swap(u_d, v_d);
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double));
