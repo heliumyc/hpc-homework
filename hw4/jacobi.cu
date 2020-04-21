@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <omp.h>
-#include <algorithm>
 
 int N = 50;
 int SIZE = N+2; // always N+2
