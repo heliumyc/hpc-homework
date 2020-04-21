@@ -157,11 +157,14 @@ int main(int argc, char** argv) {
     tok = omp_get_wtime();
     printf("Openmp cpu\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
+    cudaFree(u);
+    cudaFree(v);
 
     printf("=====================\n");
 
     // gpu
-
+    cudaMallocHost((void**)&u, MAT_SIZE * sizeof(double));
+    cudaMallocHost((void**)&v, MAT_SIZE * sizeof(double));
     for (int i = 0; i < MAT_SIZE; ++i) {
         u[i] = 0;
         v[i] = 0;
