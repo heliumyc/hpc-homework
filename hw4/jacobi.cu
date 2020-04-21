@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     Check_CUDA_Error("alloc cuda failed");
 
-    dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
+    dim3 grid((SIZE+TILE_LEN-1)/TILE_LEN, (SIZE+TILE_LEN-1)/TILE_LEN);
     dim3 block(TILE_LEN, TILE_LEN);
 
     tick = omp_get_wtime();
