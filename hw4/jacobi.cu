@@ -63,7 +63,7 @@ long jacobi_cpu(double* u, double* v) {
     return k;
 }
 
-#define TILE_LEN 8 // block size be 8*8=64
+#define TILE_LEN 16 // block size be 8*8=64
 
 __device__ double gpu_residual;
 
