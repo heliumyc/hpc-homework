@@ -135,7 +135,7 @@ int main() {
     tick = omp_get_wtime();
     double cuda_res;
     gpu_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, n);
-    cudaMemcpyAsync(&cuda_res, global_sum, 1*sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpyFromSymbol(&cuda_res, global_sum, 1*sizeof(double));
     cudaDeviceSynchronize();
 
     time = omp_get_wtime() - tick;
