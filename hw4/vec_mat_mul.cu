@@ -39,7 +39,7 @@ void openmp_vec_mat_mul(double *res, const double *mat, const double *vec, long 
     }
 }
 
-#define TILE_LEN 4 // block size be 8*8=64
+#define TILE_LEN 8 // block size be 8*8=64
 
 __device__ double atomicAdd2(double* address, double val)
 {
