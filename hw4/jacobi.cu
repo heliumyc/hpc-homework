@@ -86,19 +86,6 @@ __device__ double atomicAdd2(double* address, double val)
     return __longlong_as_double(old);
 }
 
-__global__ void gpu_jacobi(const double* u, double* v, int n) {
-    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
-    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
-
-    int size = n+2;
-
-    double _h = 1./(double) (n+1);
-    double _hsqr = _h*_h;
-
-    if(i >= 1 && j >= 1 && i <= n && j <= n){
-        v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
-    }
-}
 
 __global__ void gpu_res_calc(const double* u, int n) {
     __shared__ double smem[TILE_LEN][TILE_LEN];
@@ -107,7 +94,6 @@ __global__ void gpu_res_calc(const double* u, int n) {
 
     smem[threadIdx.x][threadIdx.y] = 0;
     int size = n+2;
-
     double _h = 1./(double) (n+1);
     double _hsqr = _h*_h;
     double _hsqrinverse = 1/_hsqr;
@@ -117,7 +103,6 @@ __global__ void gpu_res_calc(const double* u, int n) {
         smem[threadIdx.x][threadIdx.y] = diff*diff;
         __syncthreads();
     }
-
     if (threadIdx.y == 0) {
         double acc = 0;
         for (int k = 0; k < TILE_LEN; k++) {
@@ -126,7 +111,6 @@ __global__ void gpu_res_calc(const double* u, int n) {
         smem[threadIdx.x][0] = acc;
         __syncthreads();
     }
-
     if (threadIdx.x == 0 && threadIdx.y == 0) {
         double acc = 0;
         for (int k = 0; k < TILE_LEN; k++) {
@@ -135,6 +119,18 @@ __global__ void gpu_res_calc(const double* u, int n) {
         atomicAdd2(&gpu_residual, acc);
     }
 }
+
+__global__ void gpu_jacobi(double* u, double* v, int n, double hsqr) {
+    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
+    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
+    int size = n+2;
+    double _h = 1./(double) (n+1);
+    double _hsqr = _h*_h;
+    if(i >= 1 && j >= 1 && i <= n && j <= n){
+        v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+    }
+}
+
 
 int main(int argc, char** argv) {
     if (argc == 3) {
@@ -200,14 +196,15 @@ int main(int argc, char** argv) {
     maxIter = 500;
     while (gpu_iter <= maxIter) {
         cur_res = 0;
-        cudaMemcpyToSymbol(gpu_residual, 0, sizeof(double));
+        cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double)); // load to gpu global var that is set 0
+//        cudaMemcpyToSymbol(gpu_residual, 0, sizeof(double));
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N);
         cudaDeviceSynchronize();
         std::swap(u_d, v_d);
         gpu_res_calc<<<grid, block>>>(u_d, N);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
-        cur_res = std::sqrt(cur_res);
         cudaDeviceSynchronize();
+        cur_res = std::sqrt(cur_res);
         if (init_res/cur_res > 1e+6) {
             break;
         }
