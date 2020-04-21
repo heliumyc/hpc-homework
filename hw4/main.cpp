@@ -139,4 +139,17 @@ int main(int argc, char** argv) {
         uu[k] = 0;
         vv[k] = 0;
     }
+
+    double* u_d;
+    double* v_d;
+    cudaMalloc(&u_d, SIZE*SIZE * sizeof(double));
+    Check_CUDA_Error("alloc cuda failed");
+    cudaMalloc(&v_d, SIZE*SIZE * sizeof(double));
+    Check_CUDA_Error("alloc cuda failed");
+    cudaMemcpyAsync(u_d, uu, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(v_d, vv, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaDeviceSynchronize();
+    Check_CUDA_Error("alloc cuda failed");
+    printf("alloc cuda done");
+
 }
