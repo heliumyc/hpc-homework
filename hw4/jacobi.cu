@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
     // gpu
     cudaMallocHost((void**)&u, MAT_SIZE * sizeof(double));
     cudaMallocHost((void**)&v, MAT_SIZE * sizeof(double));
-    Check_CUDA_Error("alloc failed");
+    Check_CUDA_Error("alloc host failed");
     for (int i = 0; i < MAT_SIZE; ++i) {
         u[i] = 0;
         v[i] = 0;
@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
     cudaMemcpyAsync(u_d, u, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(v_d, v, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaDeviceSynchronize();
-    Check_CUDA_Error("alloc failed");
+    Check_CUDA_Error("alloc cuda failed");
 
     dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
     dim3 block(TILE_LEN, TILE_LEN);
