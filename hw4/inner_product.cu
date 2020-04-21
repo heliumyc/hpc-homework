@@ -54,15 +54,16 @@ __global__ void gpu_inner_product(const double *a, const double *b, long N) {
     long idx = blockIdx.x*blockDim.x + threadIdx.x; // idx on one dim vector
     if (idx < N) {
         smem[threadIdx.x] = a[idx] * b[idx];
+    }
+    else smem[threadIdx.x] = 0;
 
-        __syncthreads();
+    __syncthreads();
 
-        for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
-            if (threadIdx.x < s) {
-                smem[threadIdx.x] += smem[threadIdx.x + s];
-            }
-            __syncthreads();
+    for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
+        if (threadIdx.x < s) {
+            smem[threadIdx.x] += smem[threadIdx.x + s];
         }
+        __syncthreads();
     }
 
     if (threadIdx.x == 0) atomicAdd2(&global_sum, smem[0]);
@@ -128,13 +129,14 @@ int main() {
     // init
     double* a_d;
     double* b_d;
+    double cuda_res;
     cudaMalloc(&a_d, n*sizeof(double));
     cudaMalloc(&b_d, n*sizeof(double));
     cudaMemcpyAsync(a_d, a, n*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(b_d, b, n*sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyToSymbol(global_sum, &cuda_res, sizeof(double));
 
     tick = omp_get_wtime();
-    double cuda_res;
     gpu_inner_product<<<n/BLOCK_SIZE,BLOCK_SIZE>>>(a_d, b_d, n);
     cudaMemcpyFromSymbol(&cuda_res, global_sum, 1*sizeof(double));
     cudaDeviceSynchronize();
