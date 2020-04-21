@@ -39,7 +39,7 @@ void openmp_vec_mat_mul(double *res, const double *mat, const double *vec, long 
     }
 }
 
-#define BLOCK_SIZE 64
+#define BLOCK_SIZE 32
 
 __global__
 void gpu_map_vec_mat_mul(const double *mat, const double *vec, double *temp_mat, long n) {
@@ -160,7 +160,6 @@ int main() {
     for (long i = (n + BLOCK_SIZE - 1) / (BLOCK_SIZE); i > 1; i = (i + BLOCK_SIZE - 1) / (BLOCK_SIZE)) N_work += i;
     cudaMalloc(&extra_d, N_work * n * sizeof(double)); // extra memory buffer for reduction across thread-blocks
     cudaDeviceSynchronize();
-    printf("stop 0");
 
 
     tick = omp_get_wtime();
@@ -170,7 +169,6 @@ int main() {
     // map
     gpu_map_vec_mat_mul <<< grid_dim, block_dim >>> (mat_d, vec_d, temp_mat_d, n);
     cudaDeviceSynchronize();
-    printf("stop 1");
     Check_CUDA_Error("map failed");
 
     // reduce
