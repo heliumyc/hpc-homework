@@ -64,7 +64,7 @@ long jacobi_cpu(double* u, double* v) {
     return k;
 }
 
-#define TILE_LEN 16 // block size be 8*8=64
+#define TILE_LEN 8 // block size be 8*8=64
 
 __device__ double gpu_residual;
 
@@ -209,10 +209,10 @@ int main(int argc, char** argv) {
         }
         gpu_iter++;
     }
-    printf("%lf", cur_res);
     tok = omp_get_wtime();
     printf("GPU\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
+    printf("%lf", cur_res);
 
     free(u);
     free(v);
