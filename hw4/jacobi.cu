@@ -144,8 +144,8 @@ int main(int argc, char** argv) {
 
     double* u;
     double* v;
-    cudaMallocHost((void**)&u, MAT_SIZE * sizeof(double));
-    cudaMallocHost((void**)&v, MAT_SIZE * sizeof(double));
+    cudaMallocHost((void**)&u, SIZE*SIZE * sizeof(double));
+    cudaMallocHost((void**)&v, SIZE*SIZE * sizeof(double));
     // initialization
     for (int i = 0; i < SIZE*SIZE; ++i) {
         u[i] = 0;
@@ -161,24 +161,24 @@ int main(int argc, char** argv) {
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
 
     printf("=====================\n");
-
+    printf("=====================\n");printf("=====================\n");printf("=====================\n");printf("=====================\n");
     // gpu
     double* uu;
     double* vv;
-    cudaMallocHost((void**)&uu, MAT_SIZE * sizeof(double));
-    cudaMallocHost((void**)&vv, MAT_SIZE * sizeof(double));
+    cudaMallocHost((void**)&uu, SIZE*SIZE * sizeof(double));
+    cudaMallocHost((void**)&vv, SIZE*SIZE * sizeof(double));
     Check_CUDA_Error("alloc host failed");
-    for (int i = 0; i < MAT_SIZE; ++i) {
+    for (int i = 0; i < SIZE*SIZE; ++i) {
         uu[i] = 0;
         vv[i] = 0;
     }
     printf("alloc host done");
     double* u_d;
     double* v_d;
-    cudaMalloc(&u_d, MAT_SIZE * sizeof(double));
-    cudaMalloc(&v_d, MAT_SIZE * sizeof(double));
-    cudaMemcpyAsync(u_d, uu, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpyAsync(v_d, vv, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMalloc(&u_d, SIZE*SIZE * sizeof(double));
+    cudaMalloc(&v_d, SIZE*SIZE * sizeof(double));
+    cudaMemcpyAsync(u_d, uu, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(v_d, vv, SIZE*SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaDeviceSynchronize();
     Check_CUDA_Error("alloc cuda failed");
     printf("alloc cuda done");
