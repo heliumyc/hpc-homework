@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
     printf("test %f", init_res);
     Check_CUDA_Error("init failed");
-//    cudaDeviceSynchronize();
+    cudaDeviceSynchronize();
 //    gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
 //    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
 //
