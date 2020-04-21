@@ -127,9 +127,10 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
 //    }
 }
 
-__global__ void gpu_jacobi(double* u, double* v, double hsqr, int size) {
+__global__ void gpu_jacobi(double* u, double* v, double hsqr, int n) {
     int i = (threadIdx.x + 1) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y + 1) + blockIdx.y*blockDim.y;
+    int size = n+2;
     v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
 }
 
