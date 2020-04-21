@@ -155,15 +155,16 @@ int main(int argc, char** argv) {
 
     tick = omp_get_wtime();
     long gpu_iter = 0;
-    double init_res;
+    double init_res = 0;
+    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
     gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
-    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double));
+    cudaMemcpyToSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
     double cur_res = 0;
     while (gpu_iter < maxIter) {
         gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
         std::swap(u_d, v_d);
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
-        cudaMemcpyToSymbol(gpu_residual, &cur_res, sizeof(double));
+        cudaMemcpyToSymbol(&cur_res, gpu_residual, sizeof(double));
         printf("%f", cur_res);
         if (init_res/cur_res > 1e+6) {
             break;
