@@ -87,11 +87,11 @@ __device__ double atomicAdd2(double* address, double val)
 
 __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
 //    __shared__ double smem[TILE_LEN][TILE_LEN];
-    int i = (threadIdx.x + 1) + blockIdx.x*blockDim.x;
-    int j = (threadIdx.y + 1) + blockIdx.y*blockDim.y;
+    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
+    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
 
     int size = n+2;
-    if(i <= n && j <= n){
+    if(i >= 1 && j >= 1 && i <= n && j <= n){
         double diff = (-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1;
 //        diff = diff*diff;
         atomicAdd2(&gpu_residual, std::abs(diff));
@@ -128,10 +128,12 @@ __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
 }
 
 __global__ void gpu_jacobi(double* u, double* v, double hsqr, int n) {
-    int i = (threadIdx.x + 1) + blockIdx.x*blockDim.x;
-    int j = (threadIdx.y + 1) + blockIdx.y*blockDim.y;
+    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
+    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
     int size = n+2;
-    v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+    if(i >= 1 && j >= 1 && i <= n && j <= n){
+        v[i*size+j] = (hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+    }
 }
 
 
