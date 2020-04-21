@@ -59,7 +59,7 @@ __device__ double atomicAdd2(double* address, double val)
     return __longlong_as_double(old);
 }
 
-__global__ void gpu_mat_vec_mul(double* mat, double* vec, double* result, int n){
+__global__ void gpu_mat_vec_mul(const double* mat, const double* vec, double* result, int n){
 
     __shared__ double smem[BLOCK_SIZE][BLOCK_SIZE];
 
@@ -73,7 +73,7 @@ __global__ void gpu_mat_vec_mul(double* mat, double* vec, double* result, int n)
 
     for (long s = blockDim.y /2; s>0; s >>=1) {
         if (threadIdx.y < s) {
-            smem[threadIdx.x * blockDim.y + threadIdx.y] += smem[threadIdx.x * blockDim.y + threadIdx.y + s];
+            smem[threadIdx.x][threadIdx.y] += smem[threadIdx.x][threadIdx.y+s];
         }
         __syncthreads();
     }
@@ -142,6 +142,7 @@ int main() {
     printf("------------\n");
 
     // cuda
+    std::fill(vec_mul, vec_mul+n, 0);
 
     // init
     double *vec_d;
@@ -154,6 +155,7 @@ int main() {
     cudaMalloc(&gpu_result, n * sizeof(double));
     Check_CUDA_Error("malloc temp_mat failed");
     cudaMemcpyAsync(vec_d, vec, n * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(gpu_result, vec_mul, n * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpyAsync(mat_d, mat, n * n * sizeof(double), cudaMemcpyHostToDevice);
 
     dim3 grid(n/BLOCK_SIZE, n/BLOCK_SIZE);
@@ -181,8 +183,7 @@ int main() {
 
     cudaFree(vec_d);
     cudaFree(mat_d);
-    cudaFree(temp_mat_d);
-    cudaFree(extra_d);
+    cudaFree(gpu_result);
 
 }
 
