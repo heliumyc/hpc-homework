@@ -7,7 +7,7 @@
 int N = 200;
 int SIZE = N+2; // always N+2
 int MAT_SIZE = SIZE*SIZE;
-long maxIter = 30000;
+long maxIter = INT32_MAX;
 double h = 1./(double) (N+1);
 double hSqr = h*h;
 double hSqrInverse = 1/hSqr;
@@ -227,7 +227,6 @@ int main(int argc, char** argv) {
     tok = omp_get_wtime();
     printf("GPU\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
-    printf("Residual: %lf\n", cur_res);
 
     free(u);
     free(v);
