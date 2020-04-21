@@ -158,7 +158,7 @@ int main() {
     double *extra_d;
     long N_work = 1;
     for (long i = (n + BLOCK_SIZE - 1) / (BLOCK_SIZE); i > 1; i = (i + BLOCK_SIZE - 1) / (BLOCK_SIZE)) N_work += i;
-    cudaMalloc(&extra_d, (N_work+BLOCK_SIZE) * n * sizeof(double)); // extra memory buffer for reduction across thread-blocks
+    cudaMalloc(&extra_d, (N_work) * n * sizeof(double)); // extra memory buffer for reduction across thread-blocks
     cudaDeviceSynchronize();
 
 
@@ -169,37 +169,29 @@ int main() {
     // map
     gpu_map_vec_mat_mul <<< grid_dim, block_dim >>> (mat_d, vec_d, temp_mat_d, n);
     cudaDeviceSynchronize();
-    Check_CUDA_Error("map failed");
 
     // reduce
     double *sum_d = extra_d; // for reduction intermediate number
     long Nb = (n + BLOCK_SIZE - 1) / (BLOCK_SIZE);
     gpu_reduce_vec_mat_mul <<< grid_dim, block_dim >>> (sum_d, temp_mat_d, n);
-    Check_CUDA_Error("first reduce failed");
     while (Nb > 1) {
         long next_buffer_offset = Nb * n;
         Nb = (Nb + BLOCK_SIZE - 1) / (BLOCK_SIZE);
         dim3 cur_grid(n / BLOCK_SIZE, Nb);
         gpu_reduce_vec_mat_mul << < cur_grid, block_dim >> > (sum_d + next_buffer_offset, sum_d, Nb);
-        Check_CUDA_Error("some reduce failed");
-        printf("%ld\n", Nb);
         sum_d += next_buffer_offset; // currently sum_d point to reduction result
-        Check_CUDA_Error("error");
-        printf("there is the problem\n");
     }
 
     // fetch mul result
     // currently sum_d is out anwser
-    printf("out of loop\n");
     cudaMemcpy(vec_mul, sum_d, n * sizeof(double), cudaMemcpyDeviceToHost);
     Check_CUDA_Error("copy result back failed");
-    printf("out of loop\n");
     cudaDeviceSynchronize();
 
     time = omp_get_wtime() - tick;
     printf("GPU benchmark\n");
     printf("Time = %f\n", time);
-    printf("GPU Bandwidth = %f GB/s\n", 2 * n * sizeof(double) / time / 1e9);
+    printf("GPU Bandwidth = %f GB/s\n", (n*n+n) * sizeof(double) / time / 1e9);
     printf("Error = %f\n", compare_vec(vec_ref, vec_mul, n));
 
     cudaFreeHost(vec);
