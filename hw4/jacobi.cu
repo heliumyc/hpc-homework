@@ -185,14 +185,14 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     Check_CUDA_Error("alloc cuda failed");
     printf("alloc cuda done");
-//
-//    dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
-//    dim3 block(TILE_LEN, TILE_LEN);
-//
-//    printf("test stop");
-//    tick = omp_get_wtime();
-//    long gpu_iter = 0;
-//    double init_res = 0;
+
+    dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
+    dim3 block(TILE_LEN, TILE_LEN);
+
+    printf("test stop");
+    tick = omp_get_wtime();
+    long gpu_iter = 0;
+    double init_res = 0;
 //
 //    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
 //    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
@@ -225,8 +225,8 @@ int main(int argc, char** argv) {
 //    printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
 //    printf("Residual: %lf\n", cur_res);
 
-    cudaFree(uu);
-    cudaFree(vv);
+    free(uu);
+    free(vv);
     cudaFree(u_d);
     cudaFree(v_d);
 }

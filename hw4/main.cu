@@ -160,4 +160,12 @@ int main(int argc, char** argv) {
     Check_CUDA_Error("alloc cuda failed");
     printf("alloc cuda done");
 
+    dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
+    dim3 block(TILE_LEN, TILE_LEN);
+
+    printf("test stop");
+    tick = omp_get_wtime();
+    long gpu_iter = 0;
+    double init_res = 0;
+
 }
