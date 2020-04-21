@@ -52,16 +52,17 @@ __device__ double atomicAdd2(double* address, double val)
 __global__ void gpu_inner_product(const double *a, const double *b, long N) {
     __shared__ double smem[BLOCK_SIZE];
     long idx = blockIdx.x*blockDim.x + threadIdx.x; // idx on one dim vector
-    if (idx < N) smem[threadIdx.x] = a[idx] * b[idx];
-    else smem[threadIdx.x] = 0;
+    if (idx < N) {
+        smem[threadIdx.x] = a[idx] * b[idx];
 
-    __syncthreads();
-
-    for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
-        if (threadIdx.x < s) {
-            smem[threadIdx.x] += smem[threadIdx.x + s];
-        }
         __syncthreads();
+
+        for (unsigned int s=blockDim.x/2; s>0; s>>=1) {
+            if (threadIdx.x < s) {
+                smem[threadIdx.x] += smem[threadIdx.x + s];
+            }
+            __syncthreads();
+        }
     }
 
     if (threadIdx.x == 0) atomicAdd2(&global_sum, smem[0]);
