@@ -161,8 +161,10 @@ int main(int argc, char** argv) {
     // gpu
 
 //    // allocate
-    std::fill(u, u+MAT_SIZE, 0);
-    std::fill(v, v+MAT_SIZE, 0);
+    for (int i = 0; i < SIZE*SIZE; ++i) {
+        u[i] = 0;
+        v[i] = 0;
+    }
     printf("test stop");
     printf("%lf", u[0]);
     double* u_d;
