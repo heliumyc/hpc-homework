@@ -185,6 +185,7 @@ int main() {
         gpu_reduce_vec_mat_mul << < cur_grid, block_dim >> > (sum_d + next_buffer_offset, sum_d, Nb);
         sum_d += next_buffer_offset; // currently sum_d point to reduction result
     }
+    Check_CUDA_Error("loop finish");
 
     // fetch mul result
     // currently sum_d is out anwser
