@@ -120,7 +120,7 @@ __global__ void gpu_res_calc(const double* u, int n) {
     }
 }
 
-__global__ void gpu_jacobi(double* u, double* v, int n, double hsqr) {
+__global__ void gpu_jacobi(double* u, double* v, int n) {
     int i = (threadIdx.x) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y) + blockIdx.y*blockDim.y;
     int size = n+2;
