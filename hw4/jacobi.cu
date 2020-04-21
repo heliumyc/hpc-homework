@@ -170,6 +170,7 @@ int main(int argc, char** argv) {
         uu[i] = 0;
         vv[i] = 0;
     }
+    printf("alloc host done");
     double* u_d;
     double* v_d;
     cudaMalloc(&u_d, MAT_SIZE * sizeof(double));
@@ -178,6 +179,7 @@ int main(int argc, char** argv) {
     cudaMemcpyAsync(v_d, vv, MAT_SIZE * sizeof(double), cudaMemcpyHostToDevice);
     cudaDeviceSynchronize();
     Check_CUDA_Error("alloc cuda failed");
+    printf("alloc cuda done");
 
     dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
     dim3 block(TILE_LEN, TILE_LEN);
