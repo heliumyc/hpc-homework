@@ -168,7 +168,6 @@ int main(int argc, char** argv) {
         gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
         cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
         cudaDeviceSynchronize();
-        printf("%f", cur_res);
         if (init_res/cur_res > 1e+6) {
             break;
         }
