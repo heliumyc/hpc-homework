@@ -189,10 +189,10 @@ int main(int argc, char** argv) {
     Check_CUDA_Error("init failed");
     cudaDeviceSynchronize();
     gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
-//    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
 //
-//    cudaDeviceSynchronize();
-//    printf("%f", init_res);
+    cudaDeviceSynchronize();
+    printf("%f", init_res);
 //    double cur_res = 0;
 //    while (gpu_iter < maxIter) {
 //        gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
