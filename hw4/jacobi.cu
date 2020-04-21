@@ -63,10 +63,6 @@ long jacobi_cpu(double* u, double* v) {
     return k;
 }
 
-inline double sqr(double x) {
-    return x*x;
-}
-
 #define TILE_LEN 8 // block size be 8*8=64
 
 __device__ double gpu_residual;
@@ -97,13 +93,48 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
     smem[threadIdx.x][threadIdx.y] = 0;
     int size = n+2;
 
-    double _h = 1./(double) (N+1);
+    double _h = 1./(double) (n+1);
     double _hsqr = _h*_h;
     double _hsqrinverse = 1/_hsqr;
 
     if(i >= 1 && j >= 1 && i <= n && j <= n){
         smem[threadIdx.x][threadIdx.y] = sqr((-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1);
         v[i*size+j] = (_hsqr+u[(i-1)*size+j]+u[i*size+j-1]+u[(i+1)*size+j]+u[i*size+j+1])/4;
+        __syncthreads();
+    }
+
+    if (threadIdx.y == 0) {
+        double acc = 0;
+        for (int k = 0; k < TILE_LEN; k++) {
+            acc += smem[threadIdx.x][k];
+        }
+        smem[threadIdx.x][0] = acc;
+        __syncthreads();
+    }
+
+    if (threadIdx.x == 0 && threadIdx.y == 0) {
+        double acc = 0;
+        for (int k = 0; k < TILE_LEN; k++) {
+            acc += smem[k][0];
+        }
+        atomicAdd2(&gpu_residual, acc);
+    }
+}
+
+__global__ void gpu_res_calc(const double* u, double* v, int n) {
+    __shared__ double smem[TILE_LEN][TILE_LEN];
+    int i = (threadIdx.x) + blockIdx.x*blockDim.x;
+    int j = (threadIdx.y) + blockIdx.y*blockDim.y;
+
+    smem[threadIdx.x][threadIdx.y] = 0;
+    int size = n+2;
+
+    double _h = 1./(double) (n+1);
+    double _hsqr = _h*_h;
+    double _hsqrinverse = 1/_hsqr;
+
+    if(i >= 1 && j >= 1 && i <= n && j <= n){
+        smem[threadIdx.x][threadIdx.y] = sqr((-u[(i-1)*size+j]-u[i*size+j-1]+4*u[i*size+j]-u[(i+1)*size+j]-u[i*size+j+1]) * _hsqrinverse - 1);
         __syncthreads();
     }
 
@@ -171,7 +202,7 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
 
     tick = omp_get_wtime();
-    gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
+    gpu_res_calc<<<grid, block>>>(u_d, N, hSqrInverse);
     cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
     cudaDeviceSynchronize();
     init_res = std::sqrt(init_res);
