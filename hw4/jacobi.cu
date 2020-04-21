@@ -9,7 +9,7 @@ int SIZE = N+2; // always N+2
 int MAT_SIZE = SIZE*SIZE;
 //long maxIter = INT32_MAX;
 long maxIter = 30000;
-double h = 1./(double) (N+1);;
+double h = 1./(double) (N+1);
 double hSqr = h*h;
 double hSqrInverse = 1/hSqr;
 
@@ -56,6 +56,7 @@ long jacobi_cpu(double* u, double* v) {
         std::swap(u, v);
 
         if (initResidual/curResidual > 1e+6) {
+            printf("%lf", curResidual);
             break;
         }
     }
@@ -135,7 +136,6 @@ __global__ void gpu_jacobi(double* u, double* v, int n, double hsqr) {
     }
 }
 
-
 int main(int argc, char** argv) {
     printf("Jacobi 2D\n");
     printf("=====================\n");
@@ -157,7 +157,6 @@ int main(int argc, char** argv) {
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), cpu_iter);
 
     printf("=====================\n");
-    // gpu
 
     Check_CUDA_Error("alloc host failed");
     for (int k = 0; k < SIZE*SIZE; ++k) {
@@ -188,6 +187,7 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     printf("%f\n", init_res);
 
+
     tick = omp_get_wtime();
 
     double cur_res = 0;
@@ -207,7 +207,6 @@ int main(int argc, char** argv) {
         gpu_iter++;
     }
     printf("%lf\n", cur_res);
-//
     tok = omp_get_wtime();
     printf("GPU\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
