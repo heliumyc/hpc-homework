@@ -86,7 +86,7 @@ __device__ double atomicAdd2(double* address, double val)
 }
 
 __global__ void gpu_residual_calc(const double* u, int n, double _hsqrinverse) {
-    __shared__ double smem[TILE_LEN][TILE_LEN];
+//    __shared__ double smem[TILE_LEN][TILE_LEN];
     int i = (threadIdx.x + 1) + blockIdx.x*blockDim.x;
     int j = (threadIdx.y + 1) + blockIdx.y*blockDim.y;
 
@@ -185,48 +185,47 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
     Check_CUDA_Error("alloc cuda failed");
     printf("alloc cuda done");
-
-    dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
-    dim3 block(TILE_LEN, TILE_LEN);
-
-    printf("test stop");
-    tick = omp_get_wtime();
-    long gpu_iter = 0;
-    double init_res = 0;
-
-    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
-    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
-    printf("test %f", init_res);
-    Check_CUDA_Error("init failed");
-    cudaDeviceSynchronize();
-    gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
-    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
-
-    cudaDeviceSynchronize();
-    printf("%f", init_res);
-    double cur_res = 0;
-    while (gpu_iter < maxIter) {
-        gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
-//        std::swap(u_d, v_d);
-        double* temp = u;
-        u = v;
-        v = temp;
-        gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
-        cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
-        cudaDeviceSynchronize();
-        if (init_res/cur_res > 1e+6) {
-            break;
-        }
-        gpu_iter++;
-    }
-
-    tok = omp_get_wtime();
-    printf("GPU\n");
-    printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
-    printf("Residual: %lf\n", cur_res);
+//
+//    dim3 grid((N+TILE_LEN-1)/TILE_LEN, (N+TILE_LEN-1)/TILE_LEN);
+//    dim3 block(TILE_LEN, TILE_LEN);
+//
+//    printf("test stop");
+//    tick = omp_get_wtime();
+//    long gpu_iter = 0;
+//    double init_res = 0;
+//
+//    cudaMemcpyToSymbol(gpu_residual, &init_res, sizeof(double)); // load to gpu global var
+//    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+//    printf("test %f", init_res);
+//    Check_CUDA_Error("init failed");
+//    cudaDeviceSynchronize();
+//    gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
+//    cudaMemcpyFromSymbol(&init_res, gpu_residual, sizeof(double)); // load back to init residual
+//
+//    cudaDeviceSynchronize();
+//    printf("%f", init_res);
+//    double cur_res = 0;
+//    while (gpu_iter < maxIter) {
+//        gpu_jacobi<<<grid, block>>>(u_d, v_d, N, hSqr);
+////        std::swap(u_d, v_d);
+//        double* temp = u;
+//        u = v;
+//        v = temp;
+//        gpu_residual_calc<<<grid, block>>>(u_d, N, hSqrInverse);
+//        cudaMemcpyFromSymbol(&cur_res, gpu_residual, sizeof(double));
+//        cudaDeviceSynchronize();
+//        if (init_res/cur_res > 1e+6) {
+//            break;
+//        }
+//        gpu_iter++;
+//    }
+//
+//    tok = omp_get_wtime();
+//    printf("GPU\n");
+//    printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
+//    printf("Residual: %lf\n", cur_res);
 
     cudaFree(uu);
-
     cudaFree(vv);
     cudaFree(u_d);
     cudaFree(v_d);
