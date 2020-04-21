@@ -130,8 +130,6 @@ int main(){
     }
 
     double tt = omp_get_wtime();
-    Timer T;
-    T.tic();
     production_cpu = vec_inner_product_cpu(host_a, host_b, N);
     printf("CPU Bandwidth = %f GB/s\n", 2*N*sizeof(double) / (omp_get_wtime() - tt) / 1e9);
 
