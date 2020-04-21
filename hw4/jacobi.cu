@@ -11,6 +11,7 @@ long maxIter = INT32_MAX;
 double h = 1./(double) (N+1);
 double hSqr = h*h;
 double hSqrInverse = 1/hSqr;
+int threadNum = 8;
 
 inline double sqr(double x) {
     return x*x;
@@ -109,6 +110,7 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
         for (int k = 0; k < TILE_LEN; k++) {
             acc += smem[threadIdx.x][k];
         }
+        smem[threadIdx.x][0] = acc;
         __syncthreads();
     }
 
@@ -122,6 +124,19 @@ __global__ void gpu_jacobi(const double* u, double* v, int n) {
 }
 
 int main(int argc, char** argv) {
+    if (argc == 4) {
+        N = (long) strtol(argv[1], nullptr, 10);
+        SIZE = N+2;
+        maxIter = (long) strtol(argv[2], nullptr, 10);
+        if (maxIter == -1) {
+            maxIter = INT32_MAX;
+        }
+        threadNum = (int) strtol(argv[3], nullptr, 10);
+    } else {
+        printf("usage: ./program N iteration(-1 nonstop) thread_number\n");
+        exit(0);
+    }
+
     printf("Jacobi 2D\n");
     printf("=====================\n");
 
