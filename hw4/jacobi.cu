@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
     tok = omp_get_wtime();
     printf("GPU\n");
     printf("Used time: %lf \n Iteration: %ld\n", (tok-tick), gpu_iter);
-    printf("%lf", cur_res);
+    printf("%Residual lf", cur_res);
 
     free(u);
     free(v);
