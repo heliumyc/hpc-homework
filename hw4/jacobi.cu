@@ -167,6 +167,7 @@ int main(int argc, char** argv) {
         if (init_res/cur_res > 1e+6) {
             break;
         }
+        gpu_iter++;
     }
 
     tok = omp_get_wtime();
