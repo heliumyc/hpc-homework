@@ -85,25 +85,27 @@ __global__ void gpu_mat_vec_mul(const double* mat, const double* vec, double* re
 
 __global__ void gpu_mat_vec_mul_2(const double *va, const double *vb, double *ret, long N) {
     extern __shared__ double shared_cache[];
-    long idx = threadIdx.x + blockIdx.x*blockDim.x;
-    long idy = threadIdx.y + blockIdx.y*blockDim.y;
+    long idx = threadIdx.x + blockIdx.x * blockDim.x;
+    long idy = threadIdx.y + blockIdx.y * blockDim.y;
 
-    if(idx < N && idy < N){
-        long tindex = idx*N + idy;
+    if (idx < N && idy < N) {
+        long tindex = idx * N + idy;
         shared_cache[threadIdx.x * blockDim.y + threadIdx.y] = va[tindex] * vb[idy];
         __syncthreads();
     }
 
-    for (unsigned int s = blockDim.y /2; s>0; s >>=1) {
+    for (unsigned int s = blockDim.y / 2; s > 0; s >>= 1) {
         if (threadIdx.y < s) {
-            shared_cache[threadIdx.x * blockDim.y + threadIdx.y] += shared_cache[threadIdx.x * blockDim.y + threadIdx.y + s];
+            shared_cache[threadIdx.x * blockDim.y + threadIdx.y] += shared_cache[threadIdx.x * blockDim.y +
+                                                                                 threadIdx.y + s];
         }
         __syncthreads();
     }
 
-    if(threadIdx.y == 0){
+    if (threadIdx.y == 0) {
         atomicAdd2(ret + idx, shared_cache[threadIdx.x * blockDim.y + threadIdx.y]);
     }
+}
 
 void Check_CUDA_Error(const char *message) {
     cudaError_t error = cudaGetLastError();
