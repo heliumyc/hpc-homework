@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
 
     { // Write output to a file
         FILE* fd = NULL;
-        std::string fname = "~/ssortoutput@N";
+        std::string fname = "ssortoutput@N";
         fname += std::to_string(N);
         fname += "output%02d.txt";
         char filename[256];
