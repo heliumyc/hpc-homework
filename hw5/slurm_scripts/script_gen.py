@@ -16,7 +16,7 @@ moduleinfo = "module purge\nmodule load openmpi/gnu/4.0.2\n"
 import math
 
 ## strong
-N = 6400
+N = 1600
 cnt = 5
 idx = [2**i for i in range(0, cnt)]
 pArr = [i**2 for i in idx]

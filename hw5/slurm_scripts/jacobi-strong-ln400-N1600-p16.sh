@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --nodes=16
-#SBATCH --ntasks-per-node=16
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=1
 #SBATCH --time=5:00:00
 #SBATCH --mem=4GB
-#SBATCH --job-name=jacobi-strong-ln400-N6400-p256
+#SBATCH --job-name=jacobi-strong-ln400-N1600-p16
 #SBATCH --mail-type=END
 #SBATCH --mail-user=cy1505@nyu.edu
-#SBATCH --output=jacobi-strong-ln400-N6400-p256.out
+#SBATCH --output=jacobi-strong-ln400-N1600-p16.out
 
 module purge
 module load openmpi/gnu/4.0.2
