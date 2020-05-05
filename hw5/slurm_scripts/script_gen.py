@@ -19,7 +19,7 @@ import math
 N = 1600
 cnt = 5
 idx = [2**i for i in range(0, cnt)]
-pArr = [i**2 for i in idx]
+pArr = [int(i**2) for i in idx]
 lnArr = [int(N/i) for i in idx]
 maxiter = 20000
 
@@ -29,8 +29,8 @@ for (p, ln) in zip(pArr, lnArr):
     strongfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
-    config['nodes'] = int(math.sqrt(p))
-    config['ntasks-per-node'] = int(math.sqrt(p))
+    config['ntasks-per-node'] = p if p < 8 else 8
+    config['nodes'] = int(p/config['ntasks-per-node'])
     with open("./%s.sh" %fname, 'w') as f:
         f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
@@ -52,8 +52,8 @@ for p in pArr:
     weakfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
-    config['nodes'] = int(math.sqrt(p))
-    config['ntasks-per-node'] = int(math.sqrt(p))
+    config['ntasks-per-node'] = p if p < 8 else 8
+    config['nodes'] = int(p/config['ntasks-per-node'])
     with open("./%s.sh" %fname, 'w') as f:
         f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
