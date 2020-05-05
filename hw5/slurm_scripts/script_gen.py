@@ -37,14 +37,14 @@ for (p, ln) in zip(pArr, lnArr):
 ## weak
 cnt = 5
 ln = 100
-ratio = 50
 idx = [2**i for i in range(0, cnt)]
 pArr = [i**2 for i in idx]
-nArr = [i*ratio for i in idx]
 maxiter = 20000
 
 weakfiles = []
-for (p,N) in zip(pArr, nArr):
+for p in pArr:
+    import math
+    N = int(math.sqrt(p))*ln
     fname = "jacobi-weak-ln%s-N%s-p%s" % (ln, N, p)
     weakfiles.append(fname+'.sh')
     config['job-name'] = fname
