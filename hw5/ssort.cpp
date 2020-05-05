@@ -152,11 +152,8 @@ int main(int argc, char *argv[]) {
 
     { // Write output to a file
         FILE* fd = NULL;
-        std::string fname = "ssortoutput-N";
-        fname += std::to_string(N);
-        fname += ".txt";
         char filename[256];
-        snprintf(filename, 256, fname.c_str(), rank);
+        snprintf(filename, 256, "souput-N-%d-rank-%d.txt", N, rank);
         fd = fopen(filename,"w+");
 
         if(NULL == fd) {
