@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
         FILE* fd = NULL;
         char filename[256];
         snprintf(filename, 256, "souput-N-%d-rank-%d.txt", N, rank);
-        fd = fopen(filename,"w+");
+        fd = std::fopen(filename,"w+");
 
         if(NULL == fd) {
             printf("Error opening file \n");
