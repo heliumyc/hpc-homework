@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
     { // Write output to a file
         FILE* fd = NULL;
         char filename[256];
-        snprintf(filename, 256, "souput-N-%d-rank-%d.log", N, rank);
+        snprintf(filename, 256, "ssortlogs/souput-N-%d-rank-%d.log", N, rank);
         fd = std::fopen(filename,"w");
 
         if(NULL == fd) {
