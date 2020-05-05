@@ -2,11 +2,6 @@
 // Created by CONG YU on 5/3/20.
 //
 
-/* MPI-parallel Jacobi smoothing to solve -u''=f
- * Global vector has N unknowns, each processor works with its
- * part, which has lN = N/p unknowns.
- * Author: Georg Stadler
- */
 #include <stdio.h>
 #include <math.h>
 #include <mpi.h>
@@ -246,7 +241,7 @@ int main(int argc, char * argv[]) {
         printf("Time elapsed is %f seconds.\n", elapsed);
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    std::cout << mpirank << " finish" << std::endl;
+//    std::cout << mpirank << " finish" << std::endl;
     MPI_Finalize();
     return 0;
 }
