@@ -48,7 +48,7 @@ for (p,N) in zip(pArr, nArr):
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
         f.write('\n\n')
         f.write(moduleinfo)
-        f.write("mpiexec %s %s %s" %("jacobi-mpi", ln, maxiter))
+        f.write("mpiexec %s %s %s" %("../jacobi-mpi", ln, maxiter))
 
 ## ssort
 
@@ -62,4 +62,4 @@ for num in sn:
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
         f.write('\n\n')
         f.write(moduleinfo)
-        f.write("mpiexec %s %s" %("ssort", num))
+        f.write("mpiexec %s %s" %("../ssort", num))
