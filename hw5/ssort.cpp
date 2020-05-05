@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
     { // Write output to a file
         FILE* fd = NULL;
         char filename[256];
-        snprintf(filename, 256, "./output%02d.txt", rank);
+        snprintf(filename, 256, "~/ssortoutput/output%02d.txt", rank);
         fd = fopen(filename,"w+");
 
         if(NULL == fd) {
