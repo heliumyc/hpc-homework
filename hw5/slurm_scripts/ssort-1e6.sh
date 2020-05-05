@@ -8,7 +8,7 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-user=cy1505@nyu.edu
 #SBATCH --output=ssort-1e6.out
-
+#SBATCH --partition="c32_38"
 module purge
 module load openmpi/gnu/4.0.2
 mpiexec ../ssort 1000000

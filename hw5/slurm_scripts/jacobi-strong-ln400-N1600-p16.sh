@@ -8,6 +8,7 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-user=cy1505@nyu.edu
 #SBATCH --output=jacobi-strong-ln400-N1600-p16.out
+#SBATCH --partition="c32_38"
 
 module purge
 module load openmpi/gnu/4.0.2

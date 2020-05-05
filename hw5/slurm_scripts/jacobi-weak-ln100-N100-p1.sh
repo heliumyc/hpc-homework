@@ -8,6 +8,7 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-user=cy1505@nyu.edu
 #SBATCH --output=jacobi-weak-ln100-N100-p1.out
+#SBATCH --partition="c32_38"
 
 module purge
 module load openmpi/gnu/4.0.2
