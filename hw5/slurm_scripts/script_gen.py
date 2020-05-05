@@ -13,6 +13,8 @@ config = {
 sheba = "#!/bin/bash"
 moduleinfo = "module purge\nmodule load openmpi/gnu/4.0.2\n"
 
+import math
+
 ## strong
 N = 6400
 cnt = 5
@@ -27,6 +29,8 @@ for (p, ln) in zip(pArr, lnArr):
     strongfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
+    config['nodes'] = int(math.sqrt(p))
+    config['ntasks-per-node'] = int(math.sqrt(p))
     with open("./%s.sh" %fname, 'w') as f:
         f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
@@ -43,12 +47,13 @@ maxiter = 20000
 
 weakfiles = []
 for p in pArr:
-    import math
     N = int(math.sqrt(p))*ln
     fname = "jacobi-weak-ln%s-N%s-p%s" % (ln, N, p)
     weakfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
+    config['nodes'] = int(math.sqrt(p))
+    config['ntasks-per-node'] = int(math.sqrt(p))
     with open("./%s.sh" %fname, 'w') as f:
         f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
@@ -66,6 +71,8 @@ for num in sn:
     sortfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
+    config['nodes'] = int(math.sqrt(p))
+    config['ntasks-per-node'] = int(math.sqrt(p))
     with open("./%s.sh" %fname, 'w') as f:
         f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
