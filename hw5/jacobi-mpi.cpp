@@ -53,10 +53,8 @@ int main(int argc, char * argv[]) {
         printf("-lN -maxiter\n");
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
-    sscanf(argv[1], "%d", &lN);
+    sscanf(argv[1], "%d", &N);
     sscanf(argv[2], "%d", &max_iters);
-
-    MPI_Comm_size(MPI_COMM_WORLD, &p);
 
     int pInRowNum = (int) sqrt(p);
     if (pInRowNum*pInRowNum != p && mpirank == 0) {
@@ -64,10 +62,10 @@ int main(int argc, char * argv[]) {
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
 
-    N = lN*pInRowNum;
+//    N = lN*pInRowNum;
 
     /* compute number of unknowns handled by each process */
-//    lN = N / pInRowNum;
+    lN = N / pInRowNum;
     size = lN+2;
     if ((N % pInRowNum != 0) && mpirank == 0 ) {
         printf("N: %d, local N: %d\n", N, lN);
@@ -104,7 +102,7 @@ int main(int argc, char * argv[]) {
     gres = gres0;
 
     int row, col;
-    for (iter = 0; iter < max_iters && gres/gres0 > tol; iter++) {
+    for (iter = 0; iter <= max_iters && gres/gres0 > tol; iter++) {
         /* interleaf computation and communication: compute the first
          * and last value, which are communicated with non-blocking
          * send/recv. During that communication, do all the local work */
@@ -138,8 +136,8 @@ int main(int argc, char * argv[]) {
             // read buffer from top
 //            std::cout << "Rank in " << col+(row+1)*pInRowNum << std::endl;
 //            std::cout << "Rank out " << col+(row+1)*pInRowNum << std::endl;
-            MPI_Irecv(lunew+(size-1)*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 903, MPI_COMM_WORLD, &request_in[3]);
-            MPI_Isend(lunew+size*size-1, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 904, MPI_COMM_WORLD, &request_out[4]);
+            MPI_Irecv(lunew+(lN+1)*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 903, MPI_COMM_WORLD, &request_in[3]);
+            MPI_Isend(lunew+lN*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 904, MPI_COMM_WORLD, &request_out[4]);
         }
 
         if (col > 0) {
@@ -202,11 +200,11 @@ int main(int argc, char * argv[]) {
 
         /* copy newu to u using pointer flipping */
         std::swap(lunew, lu);
-        if (0 == (iter % 100)) {
+        if (0 == (iter % 10)) {
             gres = compute_residual(lu, lN, invhsq);
-            if (0 == mpirank) {
-                printf("Iter %d: Residual: %g\n", iter, gres);
-            }
+//            if (0 == mpirank) {
+//                printf("Iter %d: Residual: %g\n", iter, gres);
+//            }
         }
     }
 
@@ -218,6 +216,7 @@ int main(int argc, char * argv[]) {
     MPI_Barrier(MPI_COMM_WORLD);
     double elapsed = MPI_Wtime() - tt;
     if (0 == mpirank) {
+        printf("Residual: %g\n", gres);
         printf("Time elapsed is %f seconds.\n", elapsed);
     }
     MPI_Finalize();
