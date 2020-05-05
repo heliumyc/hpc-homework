@@ -18,6 +18,12 @@
 
 inline double sqr(double x) {return x*x;}
 
+//void checkError(int errcode) {
+//    if (errcode != MPI_SUCCESS) {
+//
+//    }
+//}
+
 /* compuate global residual, assuming ghost values are updated */
 double compute_residual(double *lu, int lN, double invhsq) {
     double tmp, gres = 0.0, lres = 0.0;
@@ -33,13 +39,17 @@ double compute_residual(double *lu, int lN, double invhsq) {
     return sqrt(gres);
 }
 
+inline double update(const double* u, int size, int i, int j, double hsq) {
+    return (hsq+u[i-1+j*size]+u[i+1+j*size]+u[i+(j-1)*size]+u[i+(j+1)*size])/4;
+}
+
 int main(int argc, char * argv[]) {
     int mpirank, p, N, lN, iter, max_iters, size;
+    MPI_Init(&argc, &argv);
     MPI_Status status;
     MPI_Request request_out[4];
     MPI_Request request_in[4];
 
-    MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
@@ -74,7 +84,7 @@ int main(int argc, char * argv[]) {
 //        printf("N != sqrt(p) * lN");
 //        MPI_Abort(MPI_COMM_WORLD, 0);
 //    }
-
+    N = pInRowNum*lN;
     /* compute number of unknowns handled by each process */
     size = lN+2;
     if ((N % pInRowNum != 0) && mpirank == 0 ) {
@@ -82,6 +92,8 @@ int main(int argc, char * argv[]) {
         printf("Exiting. N must be a multiple of sqrt(p)\n");
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
+
+//    MPI_Errhandler_set(MPI_COMM_WORLD,MPI_ERRORS_RETURN); /* return info about
 
     /* timing */
     MPI_Barrier(MPI_COMM_WORLD);
@@ -95,11 +107,11 @@ int main(int argc, char * argv[]) {
 
     // temp buffer for ghost nodes nearby
     // 0 for left, 1 for right
-    double buffer_out[2][lN+2];
-    double buffer_in[2][lN+2];
+    double buffer_out[2][size];
+    double buffer_in[2][size];
     for (int k = 0; k < 2; k++) {
-        std::fill(buffer_out[k], buffer_out[k] + (lN + 2), 0);
-        std::fill(buffer_in[k], buffer_in[k] + (lN + 2), 0);
+        std::fill(buffer_out[k], buffer_out[k] + size, 0);
+        std::fill(buffer_in[k], buffer_in[k] + size, 0);
     }
 
     double h = 1.0 / (N + 1);
@@ -108,6 +120,7 @@ int main(int argc, char * argv[]) {
     double gres, gres0, tol = 1e-5;
 
     /* initial residual */
+//    gres0 = 100;
     gres0 = compute_residual(lu, lN, invhsq);
     gres = gres0;
 
@@ -125,13 +138,17 @@ int main(int argc, char * argv[]) {
         /* Jacobi step for boundary points */
         for (int i = 1; i <= lN; i++) {
             // left
-            lunew[1+i*size] = (hsq+lu[0+i*size]+lu[2+i*size]+lu[1+(i-1)*size]+lu[1+(i+1)*size])/4;
+            lunew[1+i*size] = update(lu, size, 1, i, hsq);
+//            (hsq+lu[0+i*size]+lu[2+i*size]+lu[1+(i-1)*size]+lu[1+(i+1)*size])/4;
             // right
-            lunew[lN+i*size] = (hsq+lu[lN-1+i*size]+lu[lN+1+i*size]+lu[lN+(i-1)*size]+lu[lN+(i+1)*size])/4;
+            lunew[lN+i*size] = update(lu, size, lN, i, hsq);
+//            (hsq+lu[lN-1+i*size]+lu[lN+1+i*size]+lu[lN+(i-1)*size]+lu[lN+(i+1)*size])/4;
             // top
-            lunew[i+lN*size] = (hsq+lu[i-1+lN*size]+lu[i+1+lN*size]+lu[i+(lN-1)*size]+lu[i+(lN+1)*size])/4;
+            lunew[i+lN*size] = update(lu, size, i, lN, hsq);
+//            (hsq+lu[i-1+lN*size]+lu[i+1+lN*size]+lu[i+(lN-1)*size]+lu[i+(lN+1)*size])/4;
             // bottom
-            lunew[i+1*size] = (hsq+lu[i-1+size]+lu[i+1+size]+lu[i]+lu[i+2*size])/4;
+            lunew[i+1*size] = update(lu,size, i, 1, hsq);
+//            (hsq+lu[i-1+size]+lu[i+1+size]+lu[i]+lu[i+2*size])/4;
         }
 
         if (row > 0) {
@@ -210,14 +227,13 @@ int main(int argc, char * argv[]) {
 
         /* copy newu to u using pointer flipping */
         std::swap(lunew, lu);
-        if (0 == (iter % 10)) {
+        if (0 == (iter % 1000)) {
             gres = compute_residual(lu, lN, invhsq);
-//            if (0 == mpirank) {
-//                printf("Iter %d: Residual: %g\n", iter, gres);
-//            }
+            if (0 == mpirank) {
+                printf("Iter %d: Residual: %g\n", iter, gres);
+            }
         }
     }
-
     /* Clean up */
     free(lu);
     free(lunew);
@@ -229,8 +245,10 @@ int main(int argc, char * argv[]) {
         printf("Residual: %g\n", gres);
         printf("Time elapsed is %f seconds.\n", elapsed);
     }
+    MPI_Barrier(MPI_COMM_WORLD);
+    std::cout << mpirank << " finish" << std::endl;
     MPI_Finalize();
-//    return 0;
+    return 0;
 }
 
 
