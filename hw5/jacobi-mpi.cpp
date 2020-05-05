@@ -158,8 +158,8 @@ int main(int argc, char * argv[]) {
             // read buffer from top
 //            std::cout << "Rank in " << col+(row+1)*pInRowNum << std::endl;
 //            std::cout << "Rank out " << col+(row+1)*pInRowNum << std::endl;
-            MPI_Irecv(lunew+(lN+1)*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 903, MPI_COMM_WORLD, &request_in[2]);
-            MPI_Isend(lunew+lN*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 904, MPI_COMM_WORLD, &request_out[3]);
+            MPI_Irecv(lunew+1+(lN+1)*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 903, MPI_COMM_WORLD, &request_in[2]);
+            MPI_Isend(lunew+1+lN*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 904, MPI_COMM_WORLD, &request_out[3]);
         }
 
         if (col > 0) {
