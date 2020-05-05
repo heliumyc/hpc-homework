@@ -49,8 +49,8 @@ int main(int argc, char * argv[]) {
 //    MPI_Get_processor_name(processor_name, &name_len);
 //    printf("Rank %d/%d running on %s.\n", mpirank, p, processor_name);
 
-    if (argc != 4) {
-        printf("-N -lN -maxiter\n");
+    if (argc != 3) {
+        printf("-lN -maxiter\n");
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
 //    sscanf(argv[1], "%d", &N);
