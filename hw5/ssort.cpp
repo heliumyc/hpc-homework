@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
     { // Write output to a file
         FILE* fd = NULL;
         char filename[256];
-        snprintf(filename, 256, "souput-N-%d-rank-%d.txt", N, rank);
+        snprintf(filename, 256, "souput-N-%d-rank-%d.log", N, rank);
         fd = std::fopen(filename,"w");
 
         if(NULL == fd) {
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-        for(int i = 0; i < N; ++i)
+        for(int i = 0; i < total_count; ++i)
             fprintf(fd, "  %d\n", recv_buf[i]);
 
         fclose(fd);
