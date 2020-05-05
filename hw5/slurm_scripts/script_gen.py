@@ -1,5 +1,5 @@
 config = {
-    "node": 8,
+    "nodes": 8,
     "ntasks-per-node": 8,
     "cpus-per-task": 1,
     "time": "5:00:00",
