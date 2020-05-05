@@ -7,7 +7,8 @@ config = {
     "job-name": "",
     "mail-type": "END",
     "mail-user": "cy1505@nyu.edu",
-    "output": ""
+    "output": "",
+    "partition": "c01_17"
 }
 
 sheba = "#!/bin/bash"
