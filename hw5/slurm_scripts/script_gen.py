@@ -71,8 +71,8 @@ for num in sn:
     sortfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
-    config['nodes'] = int(math.sqrt(p))
-    config['ntasks-per-node'] = int(math.sqrt(p))
+    config['nodes'] = 8
+    config['ntasks-per-node'] = 8
     with open("./%s.sh" %fname, 'w') as f:
         f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
