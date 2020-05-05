@@ -150,16 +150,16 @@ int main(int argc, char * argv[]) {
             // read buffer from bottom
 //            std::cout << "Rank in " << col+(row-1)*pInRowNum << std::endl;
 //            std::cout << "Rank out " << col+(row-1)*pInRowNum << std::endl;
-            MPI_Irecv(lunew+1, lN, MPI_DOUBLE, col+(row-1)*pInRowNum, 904, MPI_COMM_WORLD, &request_in[4]);
-            MPI_Isend(lunew+size+1, lN, MPI_DOUBLE, col+(row-1)*pInRowNum, 903, MPI_COMM_WORLD, &request_out[3]);
+            MPI_Irecv(lunew+1, lN, MPI_DOUBLE, col+(row-1)*pInRowNum, 904, MPI_COMM_WORLD, &request_in[3]);
+            MPI_Isend(lunew+size+1, lN, MPI_DOUBLE, col+(row-1)*pInRowNum, 903, MPI_COMM_WORLD, &request_out[2]);
         }
 
         if (row < pInRowNum-1) {
             // read buffer from top
 //            std::cout << "Rank in " << col+(row+1)*pInRowNum << std::endl;
 //            std::cout << "Rank out " << col+(row+1)*pInRowNum << std::endl;
-            MPI_Irecv(lunew+(lN+1)*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 903, MPI_COMM_WORLD, &request_in[3]);
-            MPI_Isend(lunew+lN*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 904, MPI_COMM_WORLD, &request_out[4]);
+            MPI_Irecv(lunew+(lN+1)*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 903, MPI_COMM_WORLD, &request_in[2]);
+            MPI_Isend(lunew+lN*size, lN, MPI_DOUBLE, col+(row+1)*pInRowNum, 904, MPI_COMM_WORLD, &request_out[3]);
         }
 
         if (col > 0) {
@@ -193,13 +193,13 @@ int main(int argc, char * argv[]) {
 
         /* check if Isend/Irecv are done */
         if (row > 0) {
-            MPI_Wait(&request_in[4], &status);
-            MPI_Wait(&request_out[3], &status);
+            MPI_Wait(&request_in[3], &status);
+            MPI_Wait(&request_out[2], &status);
         }
 
         if (row < pInRowNum-1) {
-            MPI_Wait(&request_in[3], &status);
-            MPI_Wait(&request_out[4], &status);
+            MPI_Wait(&request_in[2], &status);
+            MPI_Wait(&request_out[3], &status);
         }
 
         if (col > 0) {
