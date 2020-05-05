@@ -1,3 +1,4 @@
+#!/bin/bash
 #SBATCH --node=8
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=1
@@ -10,4 +11,4 @@
 
 module purge
 module load openmpi/gnu/4.0.2
-mpiexec jacobi-mpi 6400 20000
+mpiexec ../jacobi-mpi 6400 20000

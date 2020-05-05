@@ -21,11 +21,14 @@ pArr = [i**2 for i in idx]
 lnArr = [int(N/i) for i in idx]
 maxiter = 20000
 
+strongfiles = []
 for (p, ln) in zip(pArr, lnArr):
     fname = "jacobi-strong-ln%s-N%s-p%s" % (ln, N, p)
+    strongfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
     with open("./%s.sh" %fname, 'w') as f:
+        f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
         f.write('\n\n')
         f.write(moduleinfo)
@@ -40,11 +43,14 @@ pArr = [i**2 for i in idx]
 nArr = [i*ratio for i in idx]
 maxiter = 20000
 
+weakfiles = []
 for (p,N) in zip(pArr, nArr):
     fname = "jacobi-weak-ln%s-N%s-p%s" % (ln, N, p)
+    weakfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
     with open("./%s.sh" %fname, 'w') as f:
+        f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
         f.write('\n\n')
         f.write(moduleinfo)
@@ -54,12 +60,28 @@ for (p,N) in zip(pArr, nArr):
 
 sn = [int(1e4), int(1e5), int(1e6)]
 
+sortfiles = []
 for num in sn:
     fname = 'ssort-1e'+str(str(num).count('0'))
+    sortfiles.append(fname+'.sh')
     config['job-name'] = fname
     config['output'] = fname+'.out'
     with open("./%s.sh" %fname, 'w') as f:
+        f.write(sheba+'\n')
         f.write('\n'.join(["#SBATCH --%s=%s" %(k,v) for k,v in config.items()]))
         f.write('\n\n')
         f.write(moduleinfo)
         f.write("mpiexec %s %s" %("../ssort", num))
+
+with open('./runsort.sh', 'w') as f:
+    f.write(sheba+'\n')
+    for name in sortfiles:
+        f.write('sbatch '+name+'\n')
+with open('./runweak.sh', 'w') as f:
+    f.write(sheba+'\n')
+    for name in weakfiles:
+        f.write('sbatch '+name+'\n')
+with open('./runstrong.sh', 'w') as f:
+    f.write(sheba+'\n')
+    for name in strongfiles:
+        f.write('sbatch '+name+'\n')
