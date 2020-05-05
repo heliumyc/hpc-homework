@@ -35,7 +35,7 @@ Max Iteration = 20000
 
 Our result shows weak scalability to a certain extent except when p=1. I guess this is because N is small and the single-thread program saves communication costs. (I tried dozens of times and the the result stays similar)
 
-<img src="/Users/yucong/Study/hpc/labs/hw5/weak_scale.png" alt="weak_scale" style="zoom:50%;" />
+<img src="/Users/yucong/Study/hpc/labs/hw5/weak_scaling.png" alt="weak_scale" style="zoom:50%;" />
 
 ## Strong scaling
 
