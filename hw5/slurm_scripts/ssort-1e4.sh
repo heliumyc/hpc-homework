@@ -10,4 +10,4 @@
 
 module purge
 module load openmpi/gnu/4.0.2
-mpiexec ssort 10000
+mpiexec ../ssort 10000
