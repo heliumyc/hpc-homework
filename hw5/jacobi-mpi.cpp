@@ -49,11 +49,12 @@ int main(int argc, char * argv[]) {
 //    MPI_Get_processor_name(processor_name, &name_len);
 //    printf("Rank %d/%d running on %s.\n", mpirank, p, processor_name);
 
-    if (argc != 3) {
-        printf("-lN -maxiter\n");
+    if (argc != 4) {
+        printf("-N -lN -maxiter\n");
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
-    sscanf(argv[1], "%d", &N);
+//    sscanf(argv[1], "%d", &N);
+    sscanf(argv[1], "%d", &lN);
     sscanf(argv[2], "%d", &max_iters);
 
     int pInRowNum = (int) sqrt(p);
@@ -62,10 +63,19 @@ int main(int argc, char * argv[]) {
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
 
-//    N = lN*pInRowNum;
+//    if (N == -1 && lN == -1) {
+//        printf("at least one of N and lN must be positive");
+//        MPI_Abort(MPI_COMM_WORLD, 0);
+//    } else if (N == -1) {
+//        N = pInRowNum*lN;
+//    } else if (lN == -1) {
+//        lN = N/pInRowNum;
+//    } else if (N != pInRowNum*lN) {
+//        printf("N != sqrt(p) * lN");
+//        MPI_Abort(MPI_COMM_WORLD, 0);
+//    }
 
     /* compute number of unknowns handled by each process */
-    lN = N / pInRowNum;
     size = lN+2;
     if ((N % pInRowNum != 0) && mpirank == 0 ) {
         printf("N: %d, local N: %d\n", N, lN);
