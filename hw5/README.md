@@ -3,7 +3,7 @@
 ```$xslt
 make clean
 make
-mpiexec -np [np] ./jacobi [-nl] [-max_iteration]
+mpiexec -np [np] ./jacobi-mpi [-nl] [-max_iteration]
 mpiexec -np [np] ./ssort [-N]
 
 ## or use bash script in slurm_scripts
